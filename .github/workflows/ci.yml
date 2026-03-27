@@ -2,14 +2,13 @@ name: HuntLink CI/CD
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v4
     
@@ -17,46 +16,43 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-      working-directory: ./backend
     
     - name: Build backend
-      run: npm run build
       working-directory: ./backend
-    
-    - name: Install frontend dependencies
-      run: npm ci
-      working-directory: ./frontend-web
+      run: |
+        npm ci
+        npm run build
     
     - name: Build frontend
-      run: npm run build
       working-directory: ./frontend-web
+      run: |
+        npm ci
+        npm run build
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: github.event_name == 'push'
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
-    - name: Deploy to Tencent Cloud
-      uses: appleboy/ssh-action@v1.0.0
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          echo "🚀 开始部署猎脉 HuntLink..."
+          set -e
           
-          # 创建部署目录
-          mkdir -p /var/www/huntlink
-          cd /var/www/huntlink
+          echo "========================================="
+          echo "🚀 开始部署猎脉 HuntLink"
+          echo "========================================="
           
-          # 拉取最新代码
+          cd /var/www/huntlink || mkdir -p /var/www/huntlink && cd /var/www/huntlink
+          
           if [ -d ".git" ]; then
             echo "📦 更新代码..."
             git pull origin master
@@ -65,37 +61,23 @@ jobs:
             git clone https://github.com/Liman-fully/huntlink.git .
           fi
           
-          # 配置环境变量
+          echo "⚙️  配置环境变量..."
           if [ ! -f "backend/.env" ]; then
-            echo "⚙️  创建环境变量..."
             cp backend/.env.example backend/.env
           fi
           
-          # 检查 Docker
-          if ! command -v docker &> /dev/null; then
-            echo "❌ Docker 未安装，正在安装..."
-            curl -fsSL https://get.docker.com | sh
-          fi
-          
-          if ! command -v docker-compose &> /dev/null; then
-            echo "📦 安装 Docker Compose..."
-            curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
-          fi
-          
-          # 部署
-          echo "🐳 启动服务..."
+          echo "🐳 启动 Docker 服务..."
           docker-compose down || true
           docker-compose up -d --build
           
-          # 等待服务启动
           echo "⏳ 等待服务启动..."
-          sleep 15
+          sleep 10
           
-          # 健康检查
           echo "🏥 健康检查..."
           docker-compose ps
           
+          echo "========================================="
           echo "✅ 部署完成！"
+          echo "========================================="
           echo "前端：http://${{ secrets.SERVER_HOST }}"
-          echo "后端：http://${{ secrets.SERVER_HOST }}:3000"
+          echo "后端：http://${{ secrets.SERVER_HOST }}:3000/api"
