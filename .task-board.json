@@ -1,5 +1,37 @@
 {
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "UI-REDESIGN-001",
+      "title": "Dashboard 页面重新设计",
+      "description": "根据左护法 UI/UX 设计方案 V1.0 重新设计 Dashboard 页面",
+      "priority": "P0",
+      "status": "in-progress",
+      "assignee": "SJY-DT-001",
+      "assigneeName": "都统",
+      "locked": true,
+      "startedAt": "2026-03-28T07:05:00+08:00",
+      "expectedEnd": "2026-03-28T07:35:00+08:00",
+      "designDoc": "docs/design/UI_UX_DESIGN_V1.md"
+    },
+    {
+      "id": "UI-REDESIGN-002",
+      "title": "TalentMarket 页面重新设计",
+      "description": "根据左护法 UI/UX 设计方案 V1.0 重新设计人才广场页面",
+      "priority": "P0",
+      "status": "pending",
+      "assignee": null,
+      "locked": false
+    },
+    {
+      "id": "UI-REDESIGN-003",
+      "title": "ResumeLibrary 页面重新设计",
+      "description": "根据左护法 UI/UX 设计方案 V1.0 重新设计简历库页面",
+      "priority": "P0",
+      "status": "pending",
+      "assignee": null,
+      "locked": false
+    }
+  ],
   "agents": [
     {
       "id": "TCF-ZH-001",
