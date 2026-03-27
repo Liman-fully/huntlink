@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../user/user.entity';
-import { IdCardRecord } from './id-card-record.entity';
+import { IdCardRecord } from './entities/id-card-record.entity';
 
 @Module({
   imports: [
