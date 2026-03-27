@@ -2,7 +2,7 @@
   "name": "huntlink-backend",
   "version": "1.0.0",
   "description": "猎脉 HuntLink 招聘社交平台后端",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "build": "nest build",
     "start": "nest start",
