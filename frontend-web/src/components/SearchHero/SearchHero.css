@@ -1,0 +1,87 @@
+/* 搜索英雄组件样式 - V1.0 设计优化 */
+.search-hero {
+  background: linear-gradient(135deg, #F0F5FF 0%, #FFFFFF 100%);
+  padding: 24px 32px;
+  border-radius: 16px;
+}
+
+.search-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  height: 56px !important;
+  font-size: 16px;
+}
+
+.search-input .t-input__inner {
+  height: 56px;
+  font-size: 16px;
+}
+
+.search-button {
+  height: 56px;
+  padding: 0 48px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.filter-button {
+  height: 56px;
+  padding: 0 24px;
+}
+
+.quick-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filters-label {
+  font-size: 14px;
+  color: #86909C;
+  margin-right: 8px;
+}
+
+.quick-filter-tag {
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 4px 12px;
+  font-size: 13px;
+}
+
+.quick-filter-tag:hover {
+  transform: translateY(-1px);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .search-hero {
+    padding: 16px;
+  }
+
+  .search-wrapper {
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .search-button {
+    flex: 1;
+    padding: 0 24px;
+  }
+
+  .filter-button {
+    padding: 0 16px;
+  }
+
+  .quick-filters {
+    gap: 6px;
+  }
+}

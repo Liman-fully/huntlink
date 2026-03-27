@@ -1,22 +1,272 @@
+/* TalentMarket 样式 - V1.0 重构版 */
+
 .talent-market {
   min-height: 100%;
+  padding-bottom: 80px;
 }
 
-.search-card {
+/* 搜索区 - 大幅强化 */
+.search-hero {
   margin-bottom: 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #F0F5FF 0%, #E6F0FF 100%);
 }
 
-.search-header {
+.search-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.search-input-large {
+  flex: 1;
+  height: 56px;
+}
+
+.search-input-large .t-input__inner {
+  font-size: 16px;
+}
+
+.search-btn-large {
+  height: 56px;
+  padding: 0 48px;
+  font-size: 16px;
+}
+
+/* 快捷筛选标签 */
+.quick-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-filter-tag {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-filter-tag:hover {
+  transform: translateY(-1px);
+}
+
+/* 高级筛选面板 */
+.advanced-filter-panel {
+  padding: 16px;
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #E5E6EB;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: #86909C;
+  font-weight: 500;
+}
+
+/* 结果区 */
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.result-info {
+  font-size: 14px;
+  color: #4E5969;
+}
+
+.result-info strong {
+  color: #166BFF;
+  font-size: 18px;
+  margin: 0 4px;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-label {
+  font-size: 14px;
+  color: #86909C;
+}
+
+.sort-tag {
+  cursor: pointer;
+}
+
+/* 简历卡片 */
+.talent-grid {
+  margin-top: 16px;
+}
+
+.talent-card {
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.talent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.talent-card.selected {
+  border-color: #166BFF;
+  background: #F0F5FF;
+}
+
+.card-checkbox {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+.card-content {
+  padding-left: 24px;
+}
+
+.talent-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.talent-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #166BFF 0%, #69B1FF 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.talent-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.talent-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 2px;
+}
+
+.talent-title {
+  font-size: 14px;
+  color: #4E5969;
+  margin-bottom: 2px;
+}
+
+.talent-company {
+  font-size: 12px;
+  color: #86909C;
+}
+
+.talent-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.talent-meta {
+  font-size: 12px;
+  color: #86909C;
+  margin-bottom: 12px;
+}
+
+.talent-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.talent-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.filters {
+.last-active {
+  font-size: 12px;
+  color: #00A870;
+}
+
+/* 批量操作栏 - 底部固定 */
+.batch-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 200px;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #E5E6EB;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+
+.batch-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.batch-info strong {
+  color: #166BFF;
+  font-size: 18px;
+}
+
+.batch-actions {
   display: flex;
   gap: 12px;
 }
 
-.talent-grid {
-  margin-top: 24px;
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .talent-grid .t-col {
+    span: 12 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-wrapper {
+    flex-direction: column;
+  }
+  
+  .search-btn-large {
+    width: 100%;
+  }
+  
+  .talent-grid .t-col {
+    span: 24 !important;
+  }
+  
+  .batch-action-bar {
+    left: 0;
+    flex-direction: column;
+    gap: 12px;
+  }
 }

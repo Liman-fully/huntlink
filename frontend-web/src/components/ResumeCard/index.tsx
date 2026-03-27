@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tag, Button, Avatar } from 'tdesign-react';
+import { Card, Tag, Button, Avatar, Checkbox, Dropdown } from 'tdesign-react';
 import './ResumeCard.css';
 
 export interface ResumeCardProps {
@@ -10,6 +10,7 @@ export interface ResumeCardProps {
     currentCompany: string;
     experience: string;
     education: string;
+    school?: string;
     location: string;
     expectedSalary: string;
     skills: string[];
@@ -19,108 +20,166 @@ export interface ResumeCardProps {
     personalScore?: number;
   };
   variant?: 'default' | 'compact' | 'dialog';
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: (id: string, selected: boolean) => void;
   onAction?: (action: { type: string; id: string }) => void;
+  onClick?: (id: string) => void;
 }
 
-const ResumeCard: React.FC<ResumeCardProps> = ({ data, variant = 'default', onAction }) => {
-  const handleViewDetail = () => {
+const ResumeCard: React.FC<ResumeCardProps> = ({
+  data,
+  variant = 'default',
+  selectable = false,
+  selected = false,
+  onSelect,
+  onAction,
+  onClick
+}) => {
+  const handleViewDetail = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onAction?.({ type: 'view', id: data.id });
   };
 
-  const handleContact = () => {
-    onAction?.({ type: 'contact', id: data.id });
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAction?.({ type: 'download', id: data.id });
   };
 
-  const handleAddToPool = () => {
+  const handleSendInterview = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAction?.({ type: 'interview', id: data.id });
+  };
+
+  const handleAddToPool = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onAction?.({ type: 'add', id: data.id });
   };
 
+  const handleSelect = (checked: boolean) => {
+    onSelect?.(data.id, checked);
+  };
+
+  const handleCardClick = () => {
+    onClick?.(data.id);
+  };
+
+  const moreActions = [
+    { content: '分享', value: 'share' },
+    { content: '收藏', value: 'favorite' },
+    { content: '举报', value: 'report' },
+  ];
+
+  const handleMoreAction = (value: string) => {
+    onAction?.({ type: value, id: data.id });
+  };
+
   return (
-    <Card className={`resume-card resume-card--${variant}`} hoverShadow>
-      <div className="card-header">
+    <Card
+      className={`resume-card resume-card--${variant} ${selected ? 'resume-card--selected' : ''}`}
+      hoverShadow
+      onClick={handleCardClick}
+    >
+      {/* 顶部区域：勾选 + 头像 + 基本信息 + 评分 */}
+      <div className="resume-header">
+        {selectable && (
+          <Checkbox
+            checked={selected}
+            onChange={handleSelect}
+            onClick={(e) => e.stopPropagation()}
+            className="select-checkbox"
+          />
+        )}
         <Avatar size="48px" image={data.avatar} className="avatar">
           {data.name?.charAt(0)}
         </Avatar>
-        <div className="basic-info">
+        <div className="resume-info">
           <div className="name-row">
             <span className="candidate-name">{data.name}</span>
-            <span className="last-active">活跃于 {data.lastActive}</span>
-          </div>
-          <div className="position-row">
-            <span className="position">{data.currentTitle}</span>
-            <span className="separator">·</span>
-            <span className="company">{data.currentCompany}</span>
+            <span className="current-title">{data.currentTitle}</span>
+            {data.currentCompany && (
+              <>
+                <span className="separator">@</span>
+                <span className="company">{data.currentCompany}</span>
+              </>
+            )}
           </div>
           <div className="meta-row">
-            <span className="meta-item">
-              <span className="icon">📍</span>
-              {data.location}
-            </span>
-            <span className="meta-item">
-              <span className="icon">💰</span>
-              <span className="salary-number">{data.expectedSalary}</span>
-            </span>
-            <span className="meta-item">
-              <span className="icon">🎓</span>
-              {data.education}
-            </span>
-            <span className="meta-item">
-              <span className="icon">⏱️</span>
-              {data.experience}
-            </span>
+            <span className="meta-item">{data.experience}</span>
+            <span className="separator">·</span>
+            <span className="meta-item">{data.education}</span>
+            {data.school && (
+              <>
+                <span className="separator">·</span>
+                <span className="meta-item">{data.school}</span>
+              </>
+            )}
+            <span className="separator">·</span>
+            <span className="meta-item">{data.location}</span>
+            <span className="separator">·</span>
+            <span className="meta-item salary">{data.expectedSalary}</span>
           </div>
+        </div>
+        <div className="resume-scores">
+          {data.matchScore !== undefined && (
+            <Tag theme="primary" variant="light" className="score-tag">
+              匹配度 {data.matchScore}%
+            </Tag>
+          )}
+          {data.personalScore !== undefined && (
+            <Tag theme="success" variant="light" className="score-tag">
+              评分 {data.personalScore}
+            </Tag>
+          )}
         </div>
       </div>
 
-      <div className="card-body">
-        <div className="summary">{data.currentCompany} · {data.currentTitle}</div>
-      </div>
-
-      <div className="card-tags">
-        {data.skills.slice(0, 5).map((skill, index) => (
-          <Tag key={index} theme="primary" variant="light" className="skill-tag">
+      {/* 技能区域 */}
+      <div className="resume-skills">
+        <span className="skills-label">技能：</span>
+        {data.skills.slice(0, 6).map((skill, index) => (
+          <Tag key={index} variant="outline" className="skill-tag">
             {skill}
           </Tag>
         ))}
-        {data.skills.length > 5 && (
+        {data.skills.length > 6 && (
           <Tag theme="default" variant="outline">
-            +{data.skills.length - 5}
+            +{data.skills.length - 6}
           </Tag>
         )}
       </div>
 
-      <div className="card-footer">
-        {data.personalScore !== undefined && (
-          <div className="score-item">
-            <span className="score-label">个人评分：</span>
-            <Tag theme="primary" variant="light">
-              {data.personalScore}分
-            </Tag>
-          </div>
-        )}
-        {data.matchScore !== undefined && (
-          <div className="score-item">
-            <span className="score-label">匹配度：</span>
-            <Tag
-              theme={data.matchScore >= 70 ? 'success' : data.matchScore >= 50 ? 'warning' : 'default'}
-              variant="light"
-            >
-              {data.matchScore}%
-            </Tag>
-          </div>
-        )}
+      {/* 状态区域 */}
+      <div className="resume-status">
+        <span className="status-item">
+          <span className="status-dot active"></span>
+          {data.lastActive}活跃
+        </span>
       </div>
 
-      <div className="card-actions">
-        <Button variant="outline" onClick={handleViewDetail}>
-          查看详情
+      {/* 操作按钮区域 */}
+      <div className="resume-actions">
+        <Button theme="primary" size="small" onClick={handleViewDetail}>
+          查看简历
         </Button>
-        <Button theme="primary" onClick={handleContact}>
-          立即沟通
+        <Button variant="outline" size="small" onClick={handleDownload}>
+          下载
         </Button>
-        <Button variant="outline" onClick={handleAddToPool}>
+        <Button variant="outline" size="small" onClick={handleSendInterview}>
+          发送面试
+        </Button>
+        <Button variant="outline" size="small" onClick={handleAddToPool}>
           加入人才库
         </Button>
+        <Dropdown
+          options={moreActions}
+          onClick={handleMoreAction}
+          trigger="click"
+        >
+          <Button variant="text" size="small">
+            更多
+          </Button>
+        </Dropdown>
       </div>
     </Card>
   );
