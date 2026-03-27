@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Card, Row, Col, Input, Select, Tag, Button, Tabs } from 'tdesign-react';
+import { Card, Row, Col, Input, Select, Tag, Button } from 'tdesign-react';
 import ResumeCard from '@/components/ResumeCard';
 import './TalentMarket.css';
-
-const { Search } = Input;
 
 const mockTalents = [
   {
@@ -60,23 +58,27 @@ export default function TalentMarket() {
     experience: '',
     education: '',
   });
+  const [activeTab, setActiveTab] = useState('recommend');
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilter({ ...filter, [key]: value });
+  };
 
   return (
     <div className="talent-market">
       <Card className="search-card">
         <div className="search-header">
-          <Search
+          <Input
             placeholder="搜索人才姓名、技能、公司..."
             value={searchKey}
             onChange={setSearchKey}
-            onSearch={(value) => console.log('search:', value)}
             style={{ width: 400 }}
           />
           <div className="filters">
             <Select
               placeholder="工作地点"
               value={filter.location}
-              onChange={(value) => setFilter({ ...filter, location: value })}
+              onChange={(value) => handleFilterChange('location', String(value))}
               style={{ width: 120 }}
               options={[
                 { label: '北京', value: '北京' },
@@ -88,7 +90,7 @@ export default function TalentMarket() {
             <Select
               placeholder="工作经验"
               value={filter.experience}
-              onChange={(value) => setFilter({ ...filter, experience: value })}
+              onChange={(value) => handleFilterChange('experience', String(value))}
               style={{ width: 120 }}
               options={[
                 { label: '1-3年', value: '1-3年' },
@@ -100,7 +102,7 @@ export default function TalentMarket() {
             <Select
               placeholder="学历"
               value={filter.education}
-              onChange={(value) => setFilter({ ...filter, education: value })}
+              onChange={(value) => handleFilterChange('education', String(value))}
               style={{ width: 120 }}
               options={[
                 { label: '本科', value: '本科' },
@@ -110,22 +112,30 @@ export default function TalentMarket() {
             />
           </div>
         </div>
-      </Card>
 
-      <Tabs
-        defaultValue="recommend"
-        tabs={[
-          { label: '推荐人才', value: 'recommend' },
-          { label: '最新入驻', value: 'newest' },
-          { label: '活跃人才', value: 'active' },
-        ]}
-      />
+        <div className="tab-nav">
+          {[
+            { key: 'recommend', label: '推荐人才' },
+            { key: 'newest', label: '最新入驻' },
+            { key: 'active', label: '活跃人才' },
+          ].map((tab) => (
+            <Tag
+              key={tab.key}
+              theme={activeTab === tab.key ? 'primary' : 'default'}
+              variant={activeTab === tab.key ? 'dark' : 'outline'}
+              className="tab-tag"
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </Tag>
+          ))}
+        </div>
+      </Card>
 
       <Row gutter={[16, 16]} className="talent-grid">
         {mockTalents.map((talent) => (
           <Col key={talent.id} span={8}>
             <ResumeCard
-              variant="card"
               data={talent}
               onAction={(action) => console.log('action:', action, talent.id)}
             />
