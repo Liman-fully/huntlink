@@ -1,5 +1,5 @@
 import { Card, Row, Col, Statistic, Button, Tag } from 'tdesign-react';
-import { UserAddIcon, FolderIcon, ChatIcon, BriefcaseIcon } from 'tdesign-icons-react';
+import { UserAddIcon, FolderIcon, ChatIcon, FileIcon } from 'tdesign-icons-react';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -16,8 +16,6 @@ export default function Dashboard() {
             <Statistic
               title="今日新增简历"
               value={128}
-              trend="increase"
-              trendValue="12%"
               prefix={<UserAddIcon />}
             />
           </Card>

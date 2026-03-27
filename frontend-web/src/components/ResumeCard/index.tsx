@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tag, Button, Avatar, Rate } from 'tdesign-react';
+import { Card, Tag, Button, Avatar } from 'tdesign-react';
 import './ResumeCard.css';
 
 export interface ResumeCardProps {
