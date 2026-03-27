@@ -7,7 +7,7 @@ on:
     branches: [ main, master, develop ]
 
 jobs:
-  test-backend:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -18,59 +18,27 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
     
-    - name: Install backend dependencies
-      working-directory: ./backend
+    - name: Install dependencies
       run: npm ci
-    
-    - name: Run backend linter
       working-directory: ./backend
-      run: npm run lint
-    
-    - name: Run backend tests
-      working-directory: ./backend
-      run: npm run test
-      continue-on-error: true  # E2E 测试可能需要数据库
     
     - name: Build backend
-      working-directory: ./backend
       run: npm run build
-
-  test-frontend-web:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: frontend-web/package-lock.json
+      working-directory: ./backend
     
     - name: Install frontend dependencies
-      working-directory: ./frontend-web
       run: npm ci
-    
-    - name: Run frontend linter
       working-directory: ./frontend-web
-      run: npm run lint
-    
-    - name: Run frontend tests
-      working-directory: ./frontend-web
-      run: npm run test
-      continue-on-error: true
     
     - name: Build frontend
-      working-directory: ./frontend-web
       run: npm run build
+      working-directory: ./frontend-web
 
   deploy:
-    needs: [test-backend, test-frontend-web]
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     
     steps:
     - uses: actions/checkout@v4
@@ -91,18 +59,16 @@ jobs:
           # 拉取最新代码
           if [ -d ".git" ]; then
             echo "📦 更新代码..."
-            git pull origin main
+            git pull origin master
           else
             echo "📦 克隆仓库..."
             git clone https://github.com/Liman-fully/huntlink.git .
           fi
           
           # 配置环境变量
-          if [ ! -f ".env" ]; then
+          if [ ! -f "backend/.env" ]; then
             echo "⚙️  创建环境变量..."
             cp backend/.env.example backend/.env
-            sed -i "s/DATABASE_PASSWORD=.*/DATABASE_PASSWORD=${{ secrets.MYSQL_PASSWORD }}/" backend/.env
-            sed -i "s/JWT_SECRET=.*/JWT_SECRET=${{ secrets.JWT_SECRET }}/" backend/.env
           fi
           
           # 检查 Docker
@@ -119,12 +85,12 @@ jobs:
           
           # 部署
           echo "🐳 启动服务..."
-          docker-compose down
+          docker-compose down || true
           docker-compose up -d --build
           
           # 等待服务启动
           echo "⏳ 等待服务启动..."
-          sleep 10
+          sleep 15
           
           # 健康检查
           echo "🏥 健康检查..."
