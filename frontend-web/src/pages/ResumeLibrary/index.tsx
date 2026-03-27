@@ -128,7 +128,7 @@ export default function ResumeLibrary() {
         footer={<Button theme="primary">开始上传</Button>}
       >
         <Upload
-          theme="drag"
+          theme="file-flow"
           accept=".pdf,.doc,.docx,.jpg,.png"
           multiple
           tips="支持 PDF、Word、图片格式，单份最大 10MB，一次最多上传 100 份"

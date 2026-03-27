@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Row, Col, Input, Select, Tag, Button } from 'tdesign-react';
+import { Card, Row, Col, Input, Select, Tag } from 'tdesign-react';
 import ResumeCard from '@/components/ResumeCard';
 import './TalentMarket.css';
 
