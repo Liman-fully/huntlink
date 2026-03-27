@@ -1,0 +1,51 @@
+.dashboard {
+  min-height: 100%;
+}
+
+.welcome {
+  padding: 40px;
+  border-radius: 12px;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.welcome h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.welcome p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.stats-row {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 8px;
+}
+
+.quick-actions {
+  margin-bottom: 24px;
+}
+
+.todo-list .todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.todo-list .todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-list .time {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 14px;
+}

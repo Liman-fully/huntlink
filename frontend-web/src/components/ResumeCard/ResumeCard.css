@@ -1,0 +1,248 @@
+/* 简历卡片样式 */
+.resume-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E6EB;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.resume-card:hover {
+  border-color: #0052D9;
+  box-shadow: 0 4px 16px rgba(0, 82, 217, 0.12);
+  transform: translateY(-2px);
+}
+
+.resume-card:hover .candidate-name {
+  color: #0052D9;
+}
+
+/* 头部区域 */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.basic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.candidate-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1D2129;
+  transition: color 0.2s;
+}
+
+.job-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.position-row {
+  font-size: 14px;
+  color: #4E5969;
+  margin-bottom: 4px;
+}
+
+.position {
+  font-weight: 500;
+}
+
+.separator {
+  color: #C9CDD4;
+  margin: 0 6px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #86909C;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon {
+  font-size: 12px;
+}
+
+.salary-number {
+  font-family: 'DIN Alternate', 'Helvetica Neue', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #FF7D00;
+  letter-spacing: -0.5px;
+}
+
+/* 内容区域 */
+.card-body {
+  margin-bottom: 12px;
+}
+
+.company-row {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #4E5969;
+  margin-bottom: 8px;
+}
+
+.company {
+  font-weight: 500;
+  color: #1D2129;
+}
+
+.department {
+  color: #86909C;
+}
+
+.summary {
+  font-size: 13px;
+  color: #4E5969;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 标签区域 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.skill-tag {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.skill-tag:hover {
+  transform: translateY(-1px);
+}
+
+/* 底部区域 */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid #E5E6EB;
+  margin-bottom: 12px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-label,
+.match-label {
+  font-size: 13px;
+  color: #86909C;
+}
+
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 操作按钮 */
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.card-actions .t-button {
+  flex: 1;
+}
+
+/* 紧凑模式（表格行） */
+.resume-card-compact {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E5E6EB;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.resume-card-compact:hover {
+  background-color: #F7F8FA;
+}
+
+/* 对话卡片模式 */
+.resume-card-chat {
+  width: 320px;
+  padding: 16px;
+}
+
+.resume-card-chat .card-header {
+  margin-bottom: 12px;
+}
+
+.resume-card-chat .card-body {
+  display: none;
+}
+
+.resume-card-chat .card-tags {
+  display: none;
+}
+
+.resume-card-chat .card-footer {
+  margin-bottom: 8px;
+}
+
+.resume-card-chat .card-actions {
+  flex-direction: column;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .resume-card {
+    padding: 16px;
+  }
+
+  .meta-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .card-actions .t-button {
+    width: 100%;
+  }
+}

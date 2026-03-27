@@ -1,0 +1,55 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { TalentModule } from './modules/talent/talent.module';
+import { JobModule } from './modules/job/job.module';
+import { ScoreModule } from './modules/score/score.module';
+import { DeepSeekModule } from './modules/deepseek/deepseek.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { ResumeModule } from './modules/resume/resume.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { MatchModule } from './modules/match/match.module';
+import { ReportModule } from './modules/report/report.module';
+import { PointsModule } from './modules/points/points.module';
+import { MembershipModule } from './modules/membership/membership.module';
+import { InvitationModule } from './modules/invitation/invitation.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      useFactory: () => ({
+        type: 'mysql',
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT) || 3306,
+        username: process.env.DB_USERNAME || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_DATABASE || 'huntlink',
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: process.env.NODE_ENV !== 'production',
+        logging: process.env.NODE_ENV === 'development',
+      }),
+    }),
+    QueueModule,
+    DeepSeekModule,
+    AuthModule,
+    UserModule,
+    TalentModule,
+    JobModule,
+    ScoreModule,
+    ResumeModule,
+    StatisticsModule,
+    NotificationModule,
+    AuthorizationModule,
+    MatchModule,
+    ReportModule,
+    PointsModule,
+    MembershipModule,
+    InvitationModule,
+  ],
+})
+export class AppModule {}

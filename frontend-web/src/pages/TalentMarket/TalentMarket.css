@@ -1,0 +1,22 @@
+.talent-market {
+  min-height: 100%;
+}
+
+.search-card {
+  margin-bottom: 24px;
+}
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+}
+
+.talent-grid {
+  margin-top: 24px;
+}

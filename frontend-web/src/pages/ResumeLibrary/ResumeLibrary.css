@@ -1,0 +1,36 @@
+.resume-library {
+  min-height: 100%;
+}
+
+.folder-panel,
+.email-panel {
+  border-radius: 8px;
+}
+
+.email-stats {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-color);
+  border-radius: 6px;
+}
+
+.email-stats p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.resume-panel {
+  min-height: 600px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.resume-list {
+  margin-top: 16px;
+}
