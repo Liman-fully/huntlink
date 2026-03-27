@@ -57,9 +57,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // Dev bypass: code "000000" always works
-    const isValid =
-      dto.code === '000000' || this.verifySmsCode(dto.phone, dto.code);
+    // 生产环境必须使用真实短信验证，禁止硬编码万能码
+    const isValid = this.verifySmsCode(dto.phone, dto.code);
     if (!isValid) throw new UnauthorizedException('验证码错误或已过期');
 
     const user = await this.userRepo.findOne({ where: { phone: dto.phone } });
@@ -70,9 +69,8 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    // Check SMS code
-    const isValid =
-      dto.code === '000000' || this.verifySmsCode(dto.phone, dto.code);
+    // 生产环境必须使用真实短信验证，禁止硬编码万能码
+    const isValid = this.verifySmsCode(dto.phone, dto.code);
     if (!isValid) throw new UnauthorizedException('验证码错误或已过期');
 
     // Check phone uniqueness
