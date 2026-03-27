@@ -10,6 +10,11 @@ import {
 @Entity('talents')
 @Index(['location', 'experience'])
 @Index(['location', 'education'])
+@Index(['jobStatus', 'location'])
+@Index(['jobStatus', 'experience'])
+@Index(['jobStatus', 'education'])
+@Index(['matchScore'])
+@Index(['createdAt'])
 export class Talent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
