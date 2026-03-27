@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResumeService } from './resume.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import * as Express from 'express';
+import { Multer } from 'multer';
 
 @Controller('resume')
 @UseGuards(JwtAuthGuard)
@@ -36,7 +36,7 @@ export class ResumeController {
   }))
   async uploadResume(
     @Request() req,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Body('folderId') folderId?: string,
   ) {
     if (!file) {
@@ -60,7 +60,7 @@ export class ResumeController {
   @UseInterceptors(FileInterceptor('files'))
   async batchUpload(
     @Request() req,
-    @UploadedFile() files: Express.Multer.File[],
+    @UploadedFile() files: any[],
     @Body('folderId') folderId?: string,
   ) {
     // TODO: 批量上传实现

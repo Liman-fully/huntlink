@@ -28,7 +28,7 @@ export class ResumeService {
 
   async uploadResume(
     userId: string,
-    file: Express.Multer.File,
+    file: any,
     folderId?: string,
   ): Promise<Resume> {
     // 保存文件
