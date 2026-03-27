@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Card, Row, Col, Input, Select, Button, Tag, Checkbox, Divider } from 'tdesign-react';
+import { Card, Row, Col, Input, Button, Tag, Divider } from 'tdesign-react';
 import ResumeCard from '@/components/ResumeCard';
 import './TalentSearch.css';
-
-const { Search } = Input;
 
 const searchConditions = {
   basic: [
@@ -39,127 +37,93 @@ export default function TalentSearch() {
     });
   };
 
+  const handleSearch = () => {
+    console.log('Search with conditions:', selectedConditions);
+  };
+
   return (
     <div className="talent-search">
       <Card className="search-panel">
         <div className="search-bar">
-          <Search
+          <Input
             placeholder="输入关键词搜索（支持布尔逻辑：AND / OR / NOT）"
             style={{ flex: 1 }}
           />
-          <Button theme="primary">搜索</Button>
-          <Button theme="default">保存为模板</Button>
+          <Button theme="primary" onClick={handleSearch}>搜索</Button>
         </div>
 
         <Divider />
 
-        {/* 基础条件 */}
-        <div className="condition-section">
-          <h4 className="section-title">基础条件</h4>
-          <Row gutter={[16, 16]}>
-            {searchConditions.basic.map((condition) => (
-              <Col key={condition.key} span={8}>
-                <div className="condition-item">
-                  <span className="condition-label">{condition.label}:</span>
-                  <div className="condition-options">
-                    {condition.options.slice(0, 4).map((option) => (
-                      <Tag
-                        key={option}
-                        theme={selectedConditions[condition.key]?.includes(option) ? 'primary' : 'default'}
-                        variant={selectedConditions[condition.key]?.includes(option) ? 'dark' : 'outline'}
-                        onClick={() => toggleCondition(condition.key, option)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {option}
-                      </Tag>
-                    ))}
-                  </div>
+        {Object.entries(searchConditions).map(([category, conditions]) => (
+          <div key={category} className="condition-section">
+            <h4 className="section-title">
+              {category === 'basic' ? '基础条件' : category === 'professional' ? '专业条件' : '高级筛选'}
+            </h4>
+            {conditions.map((condition) => (
+              <div key={condition.key} className="condition-row">
+                <span className="condition-label">{condition.label}：</span>
+                <div className="condition-options">
+                  {condition.options.map((option) => (
+                    <Tag
+                      key={option}
+                      theme={selectedConditions[condition.key]?.includes(option) ? 'primary' : 'default'}
+                      variant={selectedConditions[condition.key]?.includes(option) ? 'dark' : 'outline'}
+                      className="condition-tag"
+                      onClick={() => toggleCondition(condition.key, option)}
+                    >
+                      {option}
+                    </Tag>
+                  ))}
                 </div>
-              </Col>
+              </div>
             ))}
-          </Row>
-        </div>
-
-        <Divider />
-
-        {/* 专业条件 */}
-        <div className="condition-section">
-          <h4 className="section-title">专业条件</h4>
-          <Row gutter={[16, 16]}>
-            {searchConditions.professional.map((condition) => (
-              <Col key={condition.key} span={8}>
-                <div className="condition-item">
-                  <span className="condition-label">{condition.label}:</span>
-                  <div className="condition-options">
-                    {condition.options.map((option) => (
-                      <Tag
-                        key={option}
-                        theme={selectedConditions[condition.key]?.includes(option) ? 'primary' : 'default'}
-                        variant={selectedConditions[condition.key]?.includes(option) ? 'dark' : 'outline'}
-                        onClick={() => toggleCondition(condition.key, option)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {option}
-                      </Tag>
-                    ))}
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </div>
-
-        <Divider />
-
-        {/* 高级条件 */}
-        <div className="condition-section">
-          <h4 className="section-title">高级条件</h4>
-          <Row gutter={[16, 16]}>
-            {searchConditions.advanced.map((condition) => (
-              <Col key={condition.key} span={8}>
-                <div className="condition-item">
-                  <span className="condition-label">{condition.label}:</span>
-                  <div className="condition-options">
-                    {condition.options.slice(0, 3).map((option) => (
-                      <Tag
-                        key={option}
-                        theme={selectedConditions[condition.key]?.includes(option) ? 'primary' : 'default'}
-                        variant={selectedConditions[condition.key]?.includes(option) ? 'dark' : 'outline'}
-                        onClick={() => toggleCondition(condition.key, option)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {option}
-                      </Tag>
-                    ))}
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </div>
+          </div>
+        ))}
       </Card>
 
-      {/* 搜索结果 */}
-      <Card className="results-panel" title="搜索结果 (156人)">
-        <ResumeCard
-          variant="row"
-          data={{
-            id: '1',
-            name: '张**',
-            currentTitle: '高级前端工程师',
-            currentCompany: '字节跳动',
-            experience: '5年',
-            education: '本科 · 清华大学',
-            location: '北京',
-            expectedSalary: '40-60K',
-            skills: ['React', 'TypeScript', 'Node.js'],
-            lastActive: '2小时前',
-            matchScore: 95,
-            personalScore: 88,
-          }}
-          onAction={(action) => console.log('action:', action)}
-        />
-      </Card>
+      <div className="search-results">
+        <Row gutter={[16, 16]}>
+          {mockTalentData.map((talent) => (
+            <Col key={talent.id} span={6}>
+              <ResumeCard
+                data={talent}
+                onAction={(action) => console.log('Action:', action)}
+              />
+            </Col>
+          ))}
+        </Row>
+      </div>
     </div>
   );
 }
+
+const mockTalentData = [
+  {
+    id: '1',
+    name: '张*',
+    currentTitle: '高级前端工程师',
+    currentCompany: '字节跳动',
+    experience: '5年',
+    education: '本科 · 计算机科学',
+    location: '北京',
+    expectedSalary: '30-50K',
+    skills: ['React', 'TypeScript', 'Node.js', 'Vue'],
+    lastActive: '2小时前',
+    matchScore: 85,
+    personalScore: 78,
+  },
+  {
+    id: '2',
+    name: '李*',
+    currentTitle: '产品经理',
+    currentCompany: '阿里巴巴',
+    experience: '3年',
+    education: '硕士 · 软件工程',
+    location: '杭州',
+    expectedSalary: '25-40K',
+    skills: ['产品设计', '数据分析', 'Axure'],
+    lastActive: '1天前',
+    matchScore: 72,
+    personalScore: 82,
+  },
+];
