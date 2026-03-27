@@ -2,24 +2,26 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { RedisService } from '../../common/redis/redis.service';
 import { User, UserRole } from '../user/user.entity';
 import { LoginDto, RegisterDto, SendSmsDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  // In-memory SMS store (use Redis in production)
-  private smsStore = new Map<string, { code: string; expireAt: number }>();
-
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
     private jwtService: JwtService,
+    private redisService: RedisService,
   ) {}
 
   async sendSmsCode(dto: SendSmsDto) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expireAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-    this.smsStore.set(dto.phone, { code, expireAt });
+    const ttl = 5 * 60; // 5 minutes
+
+    // Use Redis to store verification code with auto-expiry
+    const redis = this.redisService.getClient();
+    await redis.setex(`sms:${dto.phone}`, ttl, code);
 
     // TODO: integrate real SMS provider (Aliyun / Tencent Cloud)
     // For dev, just log the code
@@ -28,16 +30,15 @@ export class AuthService {
     return { message: '验证码已发送' };
   }
 
-  private verifySmsCode(phone: string, code: string): boolean {
-    const record = this.smsStore.get(phone);
-    if (!record) return false;
+  private async verifySmsCode(phone: string, code: string): Promise<boolean> {
+    const redis = this.redisService.getClient();
+    const storedCode = await redis.get(`sms:${phone}`);
 
-    if (Date.now() > record.expireAt) {
-      this.smsStore.delete(phone);
-      return false;
-    }
-    if (record.code !== code) return false;
-    this.smsStore.delete(phone);
+    if (!storedCode) return false;
+    if (storedCode !== code) return false;
+
+    // Delete verification code after successful verification (prevent reuse)
+    await redis.del(`sms:${phone}`);
     return true;
   }
 
@@ -57,9 +58,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // Dev bypass: code "000000" always works
-    const isValid =
-      dto.code === '000000' || this.verifySmsCode(dto.phone, dto.code);
+    // 生产环境必须使用真实短信验证，禁止硬编码万能码
+    const isValid = await this.verifySmsCode(dto.phone, dto.code);
     if (!isValid) throw new UnauthorizedException('验证码错误或已过期');
 
     const user = await this.userRepo.findOne({ where: { phone: dto.phone } });
@@ -70,9 +70,8 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    // Check SMS code
-    const isValid =
-      dto.code === '000000' || this.verifySmsCode(dto.phone, dto.code);
+    // 生产环境必须使用真实短信验证，禁止硬编码万能码
+    const isValid = await this.verifySmsCode(dto.phone, dto.code);
     if (!isValid) throw new UnauthorizedException('验证码错误或已过期');
 
     // Check phone uniqueness

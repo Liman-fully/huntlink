@@ -5,7 +5,7 @@ import {
   UsergroupIcon,
   SearchIcon,
   FolderIcon,
-  BriefcaseIcon,
+  FileIcon,
   ChatIcon,
   UserIcon,
 } from 'tdesign-icons-react';
@@ -18,7 +18,7 @@ const menuItems = [
   { key: '/talent-market', icon: <UsergroupIcon />, label: '人才广场' },
   { key: '/talent-search', icon: <SearchIcon />, label: '人才搜索' },
   { key: '/resume-library', icon: <FolderIcon />, label: '简历库' },
-  { key: '/jobs', icon: <BriefcaseIcon />, label: '职位管理' },
+  { key: '/jobs', icon: <FileIcon />, label: '职位管理' },
   { key: '/messages', icon: <ChatIcon />, label: '消息中心' },
   { key: '/profile', icon: <UserIcon />, label: '我的' },
 ];
@@ -36,15 +36,16 @@ export default function Layout() {
         <Menu
           theme="light"
           value={location.pathname}
-          items={menuItems.map((item) => ({
-            value: item.key,
-            icon: item.icon,
-            label: item.label,
-          }))}
-          onChange={({ value }) => {
-            window.location.href = value as string;
+          onChange={(value: string | number) => {
+            window.location.href = String(value);
           }}
-        />
+        >
+          {menuItems.map((item) => (
+            <Menu.MenuItem key={item.key} icon={item.icon} value={item.key}>
+              {item.label}
+            </Menu.MenuItem>
+          ))}
+        </Menu>
       </Aside>
       <TLayout>
         <Header className="header">

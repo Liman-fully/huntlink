@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as Express from 'express';
 import { Resume } from './resume.entity';
 import { ResumeFolder } from './resume-folder.entity';
 
@@ -27,7 +28,7 @@ export class ResumeService {
 
   async uploadResume(
     userId: string,
-    file: Express.Multer.File,
+    file: any,
     folderId?: string,
   ): Promise<Resume> {
     // 保存文件
