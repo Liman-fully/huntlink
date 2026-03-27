@@ -220,6 +220,7 @@ git add . && git commit && git push
 
 - [产品规划 v3.0](../HuntLink-产品规划_v3.0.md)
 - [简历卡片视觉设计规范](../HuntLink-简历卡片视觉设计规范.md)
+- [多Agent协作体系说明](docs/MULTI_AGENT_COLLABORATION.md) ⭐
 - [提交前检查清单](.pre-commit-checklist.md)
 
 ---

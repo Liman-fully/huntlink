@@ -71,7 +71,7 @@ export default function TalentMarket() {
           <Input
             placeholder="搜索人才姓名、技能、公司..."
             value={searchKey}
-            onChange={setSearchKey}
+            onChange={(value) => setSearchKey(value)}
             style={{ width: 400 }}
           />
           <div className="filters">
