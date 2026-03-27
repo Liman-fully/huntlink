@@ -1,0 +1,30 @@
+{
+  "tasks": [],
+  "agents": [
+    {
+      "id": "TCF-ZH-001",
+      "name": "左护法",
+      "department": "天策府",
+      "role": "主官",
+      "status": "active",
+      "currentTask": null
+    },
+    {
+      "id": "SJY-DT-001",
+      "name": "都统",
+      "department": "神机营",
+      "role": "主官",
+      "status": "active",
+      "currentTask": null
+    },
+    {
+      "id": "TZS-YH-001",
+      "name": "右护法",
+      "department": "镇抚司",
+      "role": "主官",
+      "status": "active",
+      "currentTask": null
+    }
+  ],
+  "lastUpdate": "2026-03-28T06:40:00Z"
+}
