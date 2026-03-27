@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as Express from 'express';
 import { Resume } from './resume.entity';
 import { ResumeFolder } from './resume-folder.entity';
 
