@@ -1,5 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -18,11 +20,23 @@ import { ReportModule } from './modules/report/report.module';
 import { PointsModule } from './modules/points/points.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
+import { ExportModule } from './modules/export/export.module';
+import { IndexMaintenanceService } from './common/maintenance/index-maintenance.service';
+import { QueryLoggingMiddleware } from './common/middleware/query-logging.middleware';
+import { TalentEventListener } from './modules/talent/talent-event-listener';
+import { ExportProcessor } from './export.processor';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     RedisModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
+    }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'mysql',
@@ -52,6 +66,18 @@ import { InvitationModule } from './modules/invitation/invitation.module';
     PointsModule,
     MembershipModule,
     InvitationModule,
+    ExportModule,
+  ],
+  providers: [
+    IndexMaintenanceService,
+    TalentEventListener,
+    ExportProcessor,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(QueryLoggingMiddleware)
+      .forRoutes({ path: 'talents', method: RequestMethod.GET });
+  }
+}
