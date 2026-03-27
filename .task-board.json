@@ -1,6 +1,36 @@
 {
   "tasks": [
     {
+      "id": "INTERACTION-001",
+      "title": "快捷键支持",
+      "description": "为常用操作添加快捷键支持",
+      "priority": "P0",
+      "status": "in-progress",
+      "assignee": "SJY-DT-001",
+      "assigneeName": "都统",
+      "locked": true,
+      "startedAt": "2026-03-28T08:00:00+08:00",
+      "expectedEnd": "2026-03-28T08:15:00+08:00"
+    },
+    {
+      "id": "INTERACTION-002",
+      "title": "批量操作优化",
+      "description": "优化批量操作交互体验",
+      "priority": "P0",
+      "status": "pending",
+      "assignee": null,
+      "locked": false
+    },
+    {
+      "id": "INTERACTION-003",
+      "title": "数据可视化",
+      "description": "实现Dashboard数据图表",
+      "priority": "P0",
+      "status": "pending",
+      "assignee": null,
+      "locked": false
+    },
+    {
       "id": "COMPONENT-001",
       "title": "简历卡片组件优化",
       "description": "根据设计文档优化简历卡片组件",
