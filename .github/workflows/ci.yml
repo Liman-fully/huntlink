@@ -3,81 +3,54 @@ name: HuntLink CI/CD
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    
-    - name: Build backend
-      working-directory: ./backend
-      run: |
-        npm ci
-        npm run build
-    
-    - name: Build frontend
-      working-directory: ./frontend-web
-      run: |
-        npm ci
-        npm run build
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@master
+    - name: Deploy to Tencent Cloud
+      uses: appleboy/ssh-action@v1.2.0
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
+        port: 22
         script: |
           set -e
           
           echo "========================================="
-          echo "🚀 开始部署猎脉 HuntLink"
+          echo "🚀 Deploying HuntLink..."
           echo "========================================="
           
-          cd /var/www/huntlink || mkdir -p /var/www/huntlink && cd /var/www/huntlink
+          cd /var/www/huntlink || (mkdir -p /var/www/huntlink && cd /var/www/huntlink)
           
           if [ -d ".git" ]; then
-            echo "📦 更新代码..."
+            echo "📦 Pulling latest code..."
             git pull origin master
           else
-            echo "📦 克隆仓库..."
+            echo "📦 Cloning repository..."
             git clone https://github.com/Liman-fully/huntlink.git .
           fi
           
-          echo "⚙️  配置环境变量..."
-          if [ ! -f "backend/.env" ]; then
-            cp backend/.env.example backend/.env
-          fi
+          echo "⚙️ Setting up environment..."
+          [ ! -f "backend/.env" ] && cp backend/.env.example backend/.env
+          [ ! -f "frontend-web/.env" ] && cp frontend-web/.env.example frontend-web/.env
           
-          echo "🐳 启动 Docker 服务..."
+          echo "🐳 Starting Docker services..."
           docker-compose down || true
           docker-compose up -d --build
           
-          echo "⏳ 等待服务启动..."
-          sleep 10
+          echo "⏳ Waiting for services..."
+          sleep 15
           
-          echo "🏥 健康检查..."
+          echo "🏥 Health check..."
           docker-compose ps
           
           echo "========================================="
-          echo "✅ 部署完成！"
+          echo "✅ Deployment completed!"
           echo "========================================="
-          echo "前端：http://${{ secrets.SERVER_HOST }}"
-          echo "后端：http://${{ secrets.SERVER_HOST }}:3000/api"
+          echo "Frontend: http://${{ secrets.SERVER_HOST }}"
+          echo "Backend: http://${{ secrets.SERVER_HOST }}:3000/api"
