@@ -33,12 +33,13 @@
       "title": "ResumeLibrary 页面重新设计",
       "description": "根据左护法 UI/UX 设计方案 V1.0 重新设计简历库页面",
       "priority": "P0",
-      "status": "in-progress",
+      "status": "completed",
       "assignee": "SJY-DT-001",
       "assigneeName": "都统",
-      "locked": true,
+      "locked": false,
       "startedAt": "2026-03-28T07:25:00+08:00",
-      "expectedEnd": "2026-03-28T07:55:00+08:00",
+      "completedAt": "2026-03-28T07:35:00+08:00",
+      "codeCommit": "e3f0052",
       "designDoc": "docs/design/UI_UX_DESIGN_V1.md"
     }
   ],
