@@ -36,14 +36,14 @@ export default function Layout() {
         <Menu
           theme="light"
           value={location.pathname}
-          onChange={(value: string) => {
-            window.location.href = value;
+          onChange={(value: string | number) => {
+            window.location.href = String(value);
           }}
         >
           {menuItems.map((item) => (
-            <Menu.Item key={item.key} icon={item.icon} value={item.key}>
+            <Menu.MenuItem key={item.key} icon={item.icon} value={item.key}>
               {item.label}
-            </Menu.Item>
+            </Menu.MenuItem>
           ))}
         </Menu>
       </Aside>
