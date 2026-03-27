@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Card, Row, Col, List, Avatar, Input, Button, Badge, Tabs, Tag } from 'tdesign-react';
-import { SendIcon, AttachmentIcon } from 'tdesign-icons-react';
+import { Card, Row, Col, List, Avatar, Input, Button, Badge, Tag } from 'tdesign-react';
+import { SendIcon, AttachIcon } from 'tdesign-icons-react';
 import './Messages.css';
 
 const mockConversations = [
@@ -46,30 +46,40 @@ const mockMessages = [
 export default function Messages() {
   const [activeConversation, setActiveConversation] = useState('1');
   const [messageInput, setMessageInput] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
   return (
     <div className="messages">
       <Row gutter={0} style={{ height: 'calc(100vh - 140px)' }}>
-        {/* 左侧会话列表 */}
         <Col span={6}>
           <Card className="conversation-list" title="消息">
-            <Tabs
-              defaultValue="all"
-              tabs={[
-                { label: '全部', value: 'all' },
-                { label: '未读', value: 'unread' },
-                { label: '系统通知', value: 'system' },
-              ]}
-            />
+            <div className="tab-nav" style={{ marginBottom: 16 }}>
+              {[
+                { key: 'all', label: '全部' },
+                { key: 'unread', label: '未读' },
+                { key: 'system', label: '系统通知' },
+              ].map((tab) => (
+                <Tag
+                  key={tab.key}
+                  theme={activeTab === tab.key ? 'primary' : 'default'}
+                  variant={activeTab === tab.key ? 'dark' : 'outline'}
+                  className="tab-tag"
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </Tag>
+              ))}
+            </div>
             <List>
               {mockConversations.map((conv) => (
-                <List.Item
+                <div
                   key={conv.id}
                   onClick={() => setActiveConversation(conv.id)}
-                  className={activeConversation === conv.id ? 'active' : ''}
+                  className={`conversation-item ${activeConversation === conv.id ? 'active' : ''}`}
+                  style={{ padding: '12px', cursor: 'pointer' }}
                 >
                   <List.ListItemMeta
-                    avatar={<Avatar>{conv.name[0]}</Avatar>}
+                    image={<Avatar>{conv.name[0]}</Avatar>}
                     title={
                       <div className="conv-header">
                         <span className="conv-name">{conv.name}</span>
@@ -86,16 +96,14 @@ export default function Messages() {
                   {conv.unread > 0 && (
                     <Badge count={conv.unread} />
                   )}
-                </List.Item>
+                </div>
               ))}
             </List>
           </Card>
         </Col>
 
-        {/* 右侧聊天区域 */}
         <Col span={18}>
           <Card className="chat-area">
-            {/* 聊天头部 */}
             <div className="chat-header">
               <div className="chat-user-info">
                 <Avatar>张</Avatar>
@@ -107,7 +115,6 @@ export default function Messages() {
               <Button theme="default" size="small">查看简历</Button>
             </div>
 
-            {/* 消息列表 */}
             <div className="message-list">
               {mockMessages.map((msg) => (
                 <div key={msg.id} className={`message-item ${msg.sender}`}>
@@ -119,14 +126,13 @@ export default function Messages() {
               ))}
             </div>
 
-            {/* 输入区域 */}
             <div className="message-input">
-              <Button theme="default" variant="text" icon={<AttachmentIcon />}>
+              <Button theme="default" variant="text" icon={<AttachIcon />}>
                 附件
               </Button>
               <Input
                 value={messageInput}
-                onChange={setMessageInput}
+                onChange={(value) => setMessageInput(value)}
                 placeholder="输入消息..."
                 style={{ flex: 1, margin: '0 12px' }}
               />
