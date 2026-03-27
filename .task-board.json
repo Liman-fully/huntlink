@@ -33,12 +33,13 @@
       "title": "筛选组件优化",
       "description": "根据设计文档优化筛选组件",
       "priority": "P0",
-      "status": "in-progress",
+      "status": "completed",
       "assignee": "SJY-DT-001",
       "assigneeName": "都统",
-      "locked": true,
+      "locked": false,
       "startedAt": "2026-03-28T07:45:00+08:00",
-      "expectedEnd": "2026-03-28T07:55:00+08:00",
+      "completedAt": "2026-03-28T07:50:00+08:00",
+      "codeCommit": "c9dd029",
       "designDoc": "docs/design/UI_UX_DESIGN_V1.md#3.2"
     },
     {
@@ -46,9 +47,14 @@
       "title": "批量操作组件优化",
       "description": "根据设计文档优化批量操作组件",
       "priority": "P0",
-      "status": "pending",
-      "assignee": null,
-      "locked": false
+      "status": "completed",
+      "assignee": "SJY-DT-001",
+      "assigneeName": "都统",
+      "locked": false,
+      "startedAt": "2026-03-28T07:50:00+08:00",
+      "completedAt": "2026-03-28T07:55:00+08:00",
+      "codeCommit": "c9dd029",
+      "designDoc": "docs/design/UI_UX_DESIGN_V1.md#3.2"
     },
     {
       "id": "UI-REDESIGN-001",
