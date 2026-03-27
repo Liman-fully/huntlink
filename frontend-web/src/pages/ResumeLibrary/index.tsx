@@ -84,7 +84,6 @@ export default function ResumeLibrary() {
 
             <div className="resume-list">
               <ResumeCard
-                variant="row"
                 data={{
                   id: '1',
                   name: '张**',
@@ -93,6 +92,7 @@ export default function ResumeLibrary() {
                   experience: '5年',
                   education: '本科 · 清华大学',
                   location: '北京',
+                  expectedSalary: '30-50K',
                   skills: ['React', 'TypeScript'],
                   lastActive: '2小时前',
                   personalScore: 88,
@@ -100,13 +100,21 @@ export default function ResumeLibrary() {
                 onAction={(action) => console.log('action:', action)}
               />
               <ResumeCard
-                variant="row"
                 data={{
                   id: '2',
                   name: '李**',
                   currentTitle: '产品经理',
                   currentCompany: '阿里巴巴',
                   experience: '7年',
+                  education: '硕士 · 北京大学',
+                  location: '杭州',
+                  expectedSalary: '25-40K',
+                  skills: ['产品设计', '数据分析'],
+                  lastActive: '1天前',
+                  personalScore: 90,
+                }}
+                onAction={(action) => console.log('action:', action)}
+              />
                   education: '硕士 · 北京大学',
                   location: '杭州',
                   skills: ['产品规划', '用户研究'],
