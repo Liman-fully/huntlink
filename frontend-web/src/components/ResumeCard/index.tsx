@@ -64,6 +64,10 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
     onClick?.(data.id);
   };
 
+  const handleCardWrapperClick = () => {
+    handleCardClick();
+  };
+
   const moreActions = [
     { content: '分享', value: 'share' },
     { content: '收藏', value: 'favorite' },
@@ -75,11 +79,14 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
   };
 
   return (
-    <Card
-      className={`resume-card resume-card--${variant} ${selected ? 'resume-card--selected' : ''}`}
-      hoverShadow
+    <div 
+      className={`resume-card-wrapper ${selected ? 'selected' : ''}`}
       onClick={handleCardClick}
     >
+      <Card
+        className={`resume-card resume-card--${variant}`}
+        hoverShadow
+      >
       {/* 顶部区域：勾选 + 头像 + 基本信息 + 评分 */}
       <div className="resume-header">
         {selectable && (
@@ -181,7 +188,8 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
           </Button>
         </Dropdown>
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
