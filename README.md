@@ -126,85 +126,47 @@ COORDINATOR-小红 -002
 
 ---
 
-## ⚠️ 强制同步机制（重要！）
+## ⚠️ 同步规则（简单！）
 
-### 同步规则
+### 开发前（避免重复）
 
-**开发中**：
 ```
-每 5 分钟 → git pull（获取最新）
-每完成一步 → git commit + git push（同步进展）
-遇到报错 → 立即同步 + 记录问题
-```
-
-**离开前**：
-```
-1. 保存所有更改
-2. git add + git commit + git push
-3. 更新任务看板状态
-4. 记录当前进度到 docs/progress/devices/[你的设备].md
-5. 广播离开消息
-6. 通知@协调者
+1. git pull（获取最新）
+2. 查看 docs/TODAY_PROGRESS.md（看别人在做什么）
+3. 查看 .task-board.md（看任务状态）
+4. 确认无人做 → 领取任务
 ```
 
-### 分布式进度系统（多设备协作）
+### 开发中
 
-**查看最新进展**：
+```
+每完成一步 → git commit + git push
+遇到报错 → 立即记录到 docs/TODAY_PROGRESS.md
+```
+
+### 离开前（必须完成！）
+
+```
+1. git pull（获取最新）
+2. git add + git commit + git push（同步代码）
+3. 更新 docs/TODAY_PROGRESS.md（进展 + 配置）
+4. 更新 .task-board.md（任务状态）
+5. 通知@协调者
+```
+
+### 查看进展（只需两个地方）
+
 ```bash
-# 1. 查看总进度（所有设备汇总）
-cat docs/progress/SUMMARY.md
+# 1. 今日进展（进展 + 配置）
+cat docs/TODAY_PROGRESS.md
 
-# 2. 查看各设备进度
-ls docs/progress/devices/
-cat docs/progress/devices/device-*.md
-
-# 3. 查看最新广播（实时通知）
-ls -lt docs/progress/broadcasts/ | head -5
-cat $(ls -t docs/progress/broadcasts/ | head -1)
-
-# 4. 查看活跃设备（心跳）
-ls docs/progress/heartbeats/
-```
-
-**创建你的进度文件**：
-```bash
-# 生成设备指纹
-DEVICE_ID="device-$(hostname)-$(whoami)"
-
-# 创建进度文件
-cat > docs/progress/devices/$DEVICE_ID.md << EOF
-# $DEVICE_ID 进度
-
-**加入时间**: $(date)
-**今日目标**: [填写]
-
-## 当前任务
-- [ ] 任务 1
-
-## 最新进展
-- $(date +%H:%M) 开始任务 1
-EOF
-
-# 提交
-git add docs/progress/devices/$DEVICE_ID.md
-git commit -m "progress: $DEVICE_ID 加入"
-git push origin master
-```
-
-**自动同步**（每 5 分钟）：
-```bash
-# 运行自动同步脚本
-./scripts/auto-sync.sh
-
-# 或设置 cron job
-*/5 * * * * ./scripts/auto-sync.sh
+# 2. 任务状态
+cat .task-board.md
 ```
 
 **进度文档**：
-- `docs/progress/SUMMARY.md` - **总进度汇总（最全面）**
-- `docs/progress/devices/[设备].md` - **各设备进度（避免冲突）**
-- `docs/progress/broadcasts/时间戳.md` - **实时广播（最新通知）**
-- `docs/TODAY_PROGRESS.md` - **今日进展（备用）**
+- `docs/TODAY_PROGRESS.md` - **唯一进展文档（最重要！）**
+- `.task-board.md` - **任务状态**
 
 ---
 
