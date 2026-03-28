@@ -1,13 +1,12 @@
 import React from 'react';
 import { Card, Button, Checkbox, Space } from 'tdesign-react';
-import { DownloadIcon, UserAddIcon, ChatIcon } from 'tdesign-icons-react';
+import { UserAddIcon, ChatIcon } from 'tdesign-icons-react';
 import './BatchActionBar.css';
 
 export interface BatchActionBarProps {
   selectedCount: number;
   totalCount: number;
   onSelectAll?: (checked: boolean) => void;
-  onDownload?: () => void;
   onSendInterview?: () => void;
   onAddToPool?: () => void;
   onClearSelection?: () => void;
@@ -18,7 +17,6 @@ const BatchActionBar: React.FC<BatchActionBarProps> = ({
   selectedCount,
   totalCount,
   onSelectAll,
-  onDownload,
   onSendInterview,
   onAddToPool,
   onClearSelection,
@@ -50,13 +48,6 @@ const BatchActionBar: React.FC<BatchActionBarProps> = ({
         </div>
         <div className="batch-right">
           <Space>
-            <Button
-              variant="outline"
-              icon={<DownloadIcon />}
-              onClick={onDownload}
-            >
-              下载简历
-            </Button>
             <Button
               variant="outline"
               icon={<ChatIcon />}

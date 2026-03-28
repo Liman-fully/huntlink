@@ -297,7 +297,6 @@ export default function TalentMarket() {
               setSelectedIds([]);
             }
           }}
-          onDownload={() => MessagePlugin.info('下载选中简历')}
           onSendInterview={() => MessagePlugin.info('发送面试邀请')}
           onAddToPool={() => MessagePlugin.success('已加入人才库')}
           onClearSelection={() => setSelectedIds([])}
