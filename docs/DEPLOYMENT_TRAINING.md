@@ -2,7 +2,8 @@
 
 > **培训时间**: 2026-03-28  
 > **培训师**: 左护法（天策府主官）  
-> **目标**: 每个 Agent 都能独立部署
+> **目标**: 每个 Agent 都能独立部署  
+> **版本**: V2.0（整合右护法优化方案）
 
 ---
 
@@ -35,6 +36,39 @@
 ---
 
 ## 📚 部署方式（3 种）
+
+### 🎯 当前状态
+
+**GitHub Actions 部署**：
+- ✅ 已配置（左护法测试中）
+- ✅ 自动化部署
+- ✅ 有回滚机制
+
+**手动部署**：
+- ✅ 可用（备用方案）
+- ✅ 右护法优化方案已实施
+
+### 📋 右护法优化方案
+
+**重要文档**：`DOCKER_OPTIMIZATION_PLAN.md`
+
+**核心优化**：
+1. **多阶段构建** - 镜像体积减少 60%
+2. **健康检查** - Backend/Frontend 都有
+3. **资源限制** - 防止资源耗尽
+4. **日志管理** - 每服务 100MB 限制
+5. **回滚机制** - 部署失败自动回滚
+
+**使用优化配置**：
+```bash
+# 使用优化后的配置
+cp docker-compose.optimized.yml docker-compose.yml
+cp backend/Dockerfile.optimized backend/Dockerfile
+cp frontend-web/Dockerfile.optimized frontend-web/Dockerfile
+
+# 部署
+./deploy.optimized.sh
+```
 
 ### 方式 1: GitHub Actions 自动部署（最简单）
 
