@@ -20,6 +20,7 @@ import { ReportModule } from './modules/report/report.module';
 import { PointsModule } from './modules/points/points.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
+import { JobModule } from './modules/job/job.module';
 import { ExportModule } from './modules/export/export.module';
 import { IndexMaintenanceService } from './common/maintenance/index-maintenance.service';
 import { QueryLoggingMiddleware } from './common/middleware/query-logging.middleware';
