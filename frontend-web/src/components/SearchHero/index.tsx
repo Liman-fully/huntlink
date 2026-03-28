@@ -31,8 +31,8 @@ const SearchHero: React.FC<SearchHeroProps> = ({
     onSearch?.(keyword, activeFilters);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+  const handleKeypress = (_value: string, context: { e: React.KeyboardEvent }) => {
+    if (context.e.key === 'Enter') {
       handleSearch();
     }
   };
@@ -53,7 +53,7 @@ const SearchHero: React.FC<SearchHeroProps> = ({
           prefixIcon={<SearchIcon />}
           value={keyword}
           onChange={(value) => setKeyword(value as string)}
-          onKeyPress={handleKeyPress}
+          onKeypress={handleKeypress}
           className="search-input"
           clearable
         />

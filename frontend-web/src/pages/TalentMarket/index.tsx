@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Card, Row, Col, Input, Button, Tag, Checkbox, Space, Dropdown, DropdownMenu, DropdownItem } from 'tdesign-react';
+import { Card, Row, Col, Input, Button, Tag, Checkbox, Dropdown } from 'tdesign-react';
 import { SearchIcon, FilterIcon, DownloadIcon, ChatIcon, FolderIcon, MoreIcon } from 'tdesign-icons-react';
-import ResumeCard from '@/components/ResumeCard';
 import './TalentMarket.css';
 
 const mockTalents = [
@@ -185,25 +184,25 @@ export default function TalentMarket() {
               <Col span={4}>
                 <div className="filter-item">
                   <span className="filter-label">工作地点</span>
-                  <Tag variant="outline" clickable>北京</Tag>
-                  <Tag variant="outline" clickable>上海</Tag>
-                  <Tag variant="outline" clickable>深圳</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>北京</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>上海</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>深圳</Tag>
                 </div>
               </Col>
               <Col span={4}>
                 <div className="filter-item">
                   <span className="filter-label">工作经验</span>
-                  <Tag variant="outline" clickable>1-3年</Tag>
-                  <Tag variant="outline" clickable>3-5年</Tag>
-                  <Tag variant="outline" clickable>5-10年</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>1-3年</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>3-5年</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>5-10年</Tag>
                 </div>
               </Col>
               <Col span={4}>
                 <div className="filter-item">
                   <span className="filter-label">学历要求</span>
-                  <Tag variant="outline" clickable>本科</Tag>
-                  <Tag variant="outline" clickable>硕士</Tag>
-                  <Tag variant="outline" clickable>博士</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>本科</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>硕士</Tag>
+                  <Tag variant="outline" style={{ cursor: 'pointer' }}>博士</Tag>
                 </div>
               </Col>
             </Row>
@@ -242,13 +241,12 @@ export default function TalentMarket() {
           <Col key={talent.id} span={8}>
             <Card
               className={`talent-card ${selectedIds.includes(talent.id) ? 'selected' : ''}`}
-              hoverable
             >
               <div className="card-checkbox">
                 <Checkbox
                   checked={selectedIds.includes(talent.id)}
                   onChange={() => toggleSelect(talent.id)}
-                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  onClick={(context: { e: React.MouseEvent }) => context.e.stopPropagation()}
                 />
               </div>
               <div className="card-content" onClick={() => console.log('view', talent.id)}>
@@ -300,13 +298,12 @@ export default function TalentMarket() {
             <Button theme="default" icon={<ChatIcon />}>发送面试</Button>
             <Button theme="default" icon={<FolderIcon />}>加入人才库</Button>
             <Dropdown
-              content={
-                <DropdownMenu>
-                  <DropdownItem>添加标签</DropdownItem>
-                  <DropdownItem>发送消息</DropdownItem>
-                  <DropdownItem>移出列表</DropdownItem>
-                </DropdownMenu>
-              }
+              trigger="click"
+              options={[
+                { content: '添加标签', value: 'tag' },
+                { content: '发送消息', value: 'msg' },
+                { content: '移出列表', value: 'remove' },
+              ]}
             >
               <Button theme="default" icon={<MoreIcon />}>更多</Button>
             </Dropdown>

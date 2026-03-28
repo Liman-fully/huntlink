@@ -1,12 +1,9 @@
-import { Card, Row, Col, Statistic, Button, Tag, Timeline, Space } from 'tdesign-react';
+import { Card, Row, Col, Button, Tag, Timeline } from 'tdesign-react';
 import { 
-  UserAddIcon, 
-  FolderIcon, 
   ChatIcon,
   AddIcon,
   SearchIcon,
   UploadIcon,
-  MailIcon,
   DownloadIcon,
   SettingIcon
 } from 'tdesign-icons-react';
