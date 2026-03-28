@@ -57,6 +57,41 @@ export class PositionClassifier {
   }
 
   /**
+   * 加载职位关键词池
+   */
+  private loadPositionKeywords() {
+    const keywordsDir = path.join(__dirname, '../../../../resume-classification-rules/keywords');
+    
+    if (!fs.existsSync(keywordsDir)) {
+      console.warn('[PositionClassifier] Keywords directory not found:', keywordsDir);
+      return;
+    }
+
+    // 遍历所有职能目录
+    const functionCodes = fs.readdirSync(keywordsDir).filter(f => f.startsWith('F'));
+    
+    for (const funcCode of functionCodes) {
+      const funcDir = path.join(keywordsDir, funcCode);
+      if (!fs.statSync(funcDir).isDirectory()) continue;
+
+      // 读取该职能下所有职位关键词文件
+      const files = fs.readdirSync(funcDir).filter(f => f.endsWith('.json'));
+      
+      for (const file of files) {
+        const filePath = path.join(funcDir, file);
+        try {
+          const pk: PositionKeywords = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+          this.positionKeywords.set(pk.positionName, pk);
+        } catch (e) {
+          console.warn(`[PositionClassifier] Failed to load ${filePath}:`, e);
+        }
+      }
+    }
+
+    console.log(`[PositionClassifier] Loaded ${this.positionKeywords.size} position keyword files`);
+  }
+
+  /**
    * 加载规则（从 JSON 文件）
    */
   private loadRules() {
@@ -121,8 +156,10 @@ export class PositionClassifier {
       matchedKeywords: [],
     };
 
+    const textLower = positionText.toLowerCase();
+
     // 1. 精确匹配职位（最高优先级，confidence=1.0）
-    const exactMatch = this.positionMap.get(positionText.toLowerCase());
+    const exactMatch = this.positionMap.get(textLower);
     if (exactMatch) {
       result.categoryCode = exactMatch.code;
       result.categoryName = exactMatch.name;
@@ -133,20 +170,20 @@ export class PositionClassifier {
       return result;
     }
 
-    // 2. 包含匹配职位（confidence=0.9）
+    // 2. 包含匹配职位（confidence=0.9-0.95）
     for (const [positionName, func] of this.positionMap.entries()) {
-      if (positionText.toLowerCase().includes(positionName)) {
+      if (textLower.includes(positionName)) {
         result.categoryCode = func.code;
         result.categoryName = func.name;
         result.positionName = positionName;
-        result.confidence = 0.9;
+        result.confidence = 0.95;
         result.matchType = 'partial';
         result.matchedKeywords = [positionName];
         return result;
       }
     }
 
-    // 3. 加权评分匹配（优化版，confidence=0.5-0.95）
+    // 3. 加权评分匹配（优化版，confidence=0.5-0.9）
     const weightedResult = this.classifyWithWeights(positionText);
     if (weightedResult.confidence > 0.5) {
       return weightedResult;
@@ -174,7 +211,7 @@ export class PositionClassifier {
       const keywords = this.getWeightedKeywords(func.code);
       const score = this.calculateWeightedScore(text, keywords);
       
-      if (score > 0.5) {
+      if (score > 0.3) {  // 降低阈值
         scores.push({ func, score, keywords: [] });
       }
     }
@@ -187,7 +224,7 @@ export class PositionClassifier {
       result.categoryCode = best.func.code;
       result.categoryName = best.func.name;
       result.positionName = text;
-      result.confidence = Math.min(0.95, best.score);
+      result.confidence = Math.min(0.9, best.score);  // 上限 0.9
       result.matchType = 'weighted';
       
       return result;
@@ -247,19 +284,37 @@ export class PositionClassifier {
   }
 
   /**
-   * 计算加权评分
+   * 计算加权评分（参考 Python 实现，添加词频和位置加分）
    */
   private calculateWeightedScore(text: string, keywords: WeightedKeyword[]): number {
     let score = 0;
     let maxPositiveScore = 0;
     const matchedKeywords: string[] = [];
+    const textLower = text.toLowerCase();
 
     for (const kw of keywords) {
-      if (text.toLowerCase().includes(kw.keyword.toLowerCase())) {
+      const kwLower = kw.keyword.toLowerCase();
+      // 转义正则表达式特殊字符（如 C++ 中的 +）
+      const escapedKw = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const count = (textLower.match(new RegExp(escapedKw, 'g')) || []).length;
+      
+      if (count > 0) {
         matchedKeywords.push(kw.keyword);
+        
         if (kw.weight > 0) {
+          // 基础权重
           score += kw.weight;
           maxPositiveScore += kw.weight;
+          
+          // 词频加分（上限 0.3，参考 Python 实现）
+          const freqBonus = Math.min((count - 1) * 0.1, 0.3);
+          score += freqBonus;
+          
+          // 位置加分（前 200 字符内 +0.2，参考 Python 实现）
+          const position = textLower.indexOf(kwLower);
+          if (position >= 0 && position < 200) {
+            score += 0.2;
+          }
         } else {
           // 排除词：直接降低评分
           score += kw.weight;
@@ -271,15 +326,27 @@ export class PositionClassifier {
 
     // 如果有排除词匹配，大幅降低置信度
     const hasExcludeMatch = keywords.some(kw => 
-      kw.layer === 5 && text.toLowerCase().includes(kw.keyword.toLowerCase())
+      kw.layer === 5 && textLower.includes(kw.keyword.toLowerCase())
     );
     
-    if (hasExcludeMatch && score < maxPositiveScore * 0.5) {
-      return 0;  // 排除
+    if (hasExcludeMatch) {
+      // 有排除词时，置信度上限 0.5
+      score = Math.min(score, 0.5);
     }
 
     // 归一化到 0-1
-    return maxPositiveScore > 0 ? Math.max(0, Math.min(1, score / maxPositiveScore)) : 0;
+    const normalizedScore = maxPositiveScore > 0 ? Math.max(0, Math.min(1, score / maxPositiveScore)) : 0;
+    
+    // 置信度分级
+    if (normalizedScore >= 0.8) {
+      return Math.min(0.9, normalizedScore);  // 强匹配上限 0.9
+    } else if (normalizedScore >= 0.6) {
+      return normalizedScore;  // 良好匹配
+    } else if (normalizedScore >= 0.4) {
+      return normalizedScore;  // 一般匹配
+    } else {
+      return normalizedScore;  // 弱匹配
+    }
   }
 
   /**
