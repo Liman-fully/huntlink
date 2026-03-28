@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CacheStatsService } from '../../common/cache/cache-stats.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Brackets } from 'typeorm';
 import { Candidate } from './candidate.entity';
