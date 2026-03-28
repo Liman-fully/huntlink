@@ -28,6 +28,16 @@ export class Resume {
   @Column({ name: 'file_type', length: 20 })
   fileType: string; // pdf, docx, jpg, png
 
+  // COS 存储相关字段
+  @Column({ name: 'cos_url', nullable: true })
+  cosUrl: string; // COS 文件 URL
+
+  @Column({ name: 'cos_key', nullable: true })
+  cosKey: string; // COS 对象 key，用于删除
+
+  @Column({ name: 'local_path', nullable: true })
+  localPath: string; // 本地备份路径
+
   @Column({ name: 'parse_status', default: 'pending' })
   parseStatus: string; // pending, processing, success, failed
 
