@@ -1,175 +1,204 @@
-import { Card, Row, Col, Button, Tag, Timeline } from 'tdesign-react';
-import { 
-  ChatIcon,
-  AddIcon,
-  SearchIcon,
-  UploadIcon,
-  DownloadIcon,
-  SettingIcon
-} from 'tdesign-icons-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Row, Col } from 'tdesign-react';
+import { RefreshIcon } from 'tdesign-icons-react';
+import StatsCard from '../../components/StatsCard';
+import StatsChart, { ChartDataPoint } from '../../components/StatsChart';
 import './Dashboard.css';
 
+// 模拟数据生成器
+const generateMockData = () => ({
+  stats: {
+    dailyActive: {
+      value: Math.floor(Math.random() * 500) + 800,
+      trend: { value: Math.floor(Math.random() * 20) + 5, type: 'increase' as const },
+    },
+    downloads: {
+      value: Math.floor(Math.random() * 1000) + 2000,
+      trend: { value: Math.floor(Math.random() * 15) + 3, type: 'increase' as const },
+    },
+    searches: {
+      value: Math.floor(Math.random() * 2000) + 5000,
+      trend: { value: Math.floor(Math.random() * 10) + 2, type: 'decrease' as const },
+    },
+  },
+  charts: {
+    dailyTrend: Array.from({ length: 7 }, (_, i) => ({
+      label: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i],
+      value: Math.floor(Math.random() * 500) + 500,
+    })),
+    weeklyStats: Array.from({ length: 4 }, (_, i) => ({
+      label: ['第 1 周', '第 2 周', '第 3 周', '第 4 周'][i],
+      value: Math.floor(Math.random() * 1000) + 2000,
+    })),
+    sourceDistribution: [
+      { label: '直接访问', value: Math.floor(Math.random() * 30) + 20 },
+      { label: '搜索引擎', value: Math.floor(Math.random() * 25) + 15 },
+      { label: '社交媒体', value: Math.floor(Math.random() * 20) + 10 },
+      { label: '推荐链接', value: Math.floor(Math.random() * 15) + 5 },
+    ],
+  },
+});
+
+interface DashboardStats {
+  dailyActive: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
+  downloads: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
+  searches: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
+}
+
+interface DashboardCharts {
+  dailyTrend: ChartDataPoint[];
+  weeklyStats: ChartDataPoint[];
+  sourceDistribution: ChartDataPoint[];
+}
+
 export default function Dashboard() {
-  // 模拟待办数据
-  const todoItems = [
-    { time: '14:00', type: 'interview', tag: '面试', tagTheme: 'primary', title: '张** - 高级前端工程师', subtitle: '会议室 A · 技术面' },
-    { time: '15:30', type: 'call', tag: '电话', tagTheme: 'warning', title: '李** - 产品经理意向确认', subtitle: '138****1234' },
-    { time: '明日', type: 'follow', tag: '跟进', tagTheme: 'success', title: '王** - offer 谈判', subtitle: '薪资确认' },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [charts, setCharts] = useState<DashboardCharts | null>(null);
+
+  // 获取数据
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // 模拟 API 调用延迟
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      const data = generateMockData();
+      setStats(data.stats);
+      setCharts(data.charts);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('获取数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 初始加载
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // 自动刷新（每 30 秒）
+  useEffect(() => {
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <div className="dashboard">
-      {/* 欢迎区 - 简洁 */}
-      <div className="welcome-compact">
-        <h1>早上好，左护法</h1>
-        <p>今天有 <strong>12</strong> 份新简历 <Button size="small" variant="text">查看</Button></p>
+      {/* 页面头部 */}
+      <div className="dashboard-header">
+        <div className="dashboard-title">
+          <h1>数据看板</h1>
+          <p className="dashboard-subtitle">实时监控核心业务指标</p>
+        </div>
+        <div className="dashboard-actions">
+          <span className="last-updated">
+            最后更新：{formatTime(lastUpdated)}
+          </span>
+          <button 
+            className="refresh-btn" 
+            onClick={fetchData}
+            disabled={loading}
+          >
+            <RefreshIcon /> {loading ? '刷新中...' : '刷新'}
+          </button>
+        </div>
       </div>
 
-      <Row gutter={24}>
-        {/* 左侧：核心指标 + 快捷操作 */}
-        <Col span={6}>
-          {/* 核心指标 - 精简到3个 */}
-          <div className="stats-compact">
-            <Card className="stat-card-mini card-hover">
-              <div className="stat-content">
-                <span className="stat-value">128</span>
-                <span className="stat-label">今日新增</span>
-              </div>
-            </Card>
-            <Card className="stat-card-mini card-hover">
-              <div className="stat-content">
-                <span className="stat-value">3842</span>
-                <span className="stat-label">简历总量</span>
-              </div>
-            </Card>
-            <Card className="stat-card-mini card-hover">
-              <div className="stat-content">
-                <span className="stat-value highlight">56</span>
-                <span className="stat-label">待处理</span>
-              </div>
-            </Card>
-          </div>
-        </Col>
+      {/* 核心指标卡片 */}
+      <div className="dashboard-section">
+        <h2 className="section-title">核心指标</h2>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} sm={12} lg={8}>
+            <StatsCard
+              title="日活跃用户"
+              value={stats?.dailyActive.value.toLocaleString() ?? '-'}
+              trend={stats?.dailyActive.trend}
+              subtitle="较昨日"
+              loading={loading}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={8}>
+            <StatsCard
+              title="下载量"
+              value={stats?.downloads.value.toLocaleString() ?? '-'}
+              trend={stats?.downloads.trend}
+              subtitle="较昨日"
+              loading={loading}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={8}>
+            <StatsCard
+              title="搜索量"
+              value={stats?.searches.value.toLocaleString() ?? '-'}
+              trend={stats?.searches.trend}
+              subtitle="较昨日"
+              loading={loading}
+            />
+          </Col>
+        </Row>
+      </div>
 
-        {/* 右侧：快捷操作 + 待办事项 */}
-        <Col span={18}>
-          <Card className="quick-actions-grid" bordered={false}>
-            <Row gutter={[16, 16]}>
-              {/* 快捷操作 - 6个按钮 2行3列 */}
-              <Col span={8}>
-                <Button block theme="primary" size="large" icon={<AddIcon />}>
-                  发布职位
-                </Button>
-              </Col>
-              <Col span={8}>
-                <Button block theme="default" size="large" icon={<SearchIcon />}>
-                  搜索人才
-                </Button>
-              </Col>
-              <Col span={8}>
-                <Button block theme="default" size="large" icon={<UploadIcon />}>
-                  导入简历
-                </Button>
-              </Col>
-              <Col span={8}>
-                <Button block theme="default" size="large" icon={<ChatIcon />}>
-                  批量面试
-                </Button>
-              </Col>
-              <Col span={8}>
-                <Button block theme="default" size="large" icon={<DownloadIcon />}>
-                  导出报表
-                </Button>
-              </Col>
-              <Col span={8}>
-                <Button block theme="default" size="large" icon={<SettingIcon />}>
-                  邮箱设置
-                </Button>
-              </Col>
-            </Row>
-          </Card>
+      {/* 数据图表 */}
+      <div className="dashboard-section">
+        <h2 className="section-title">数据趋势</h2>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <StatsChart
+              title="日活趋势"
+              data={charts?.dailyTrend ?? []}
+              type="line"
+              height={280}
+              loading={loading}
+            />
+          </Col>
+          <Col xs={24} lg={12}>
+            <StatsChart
+              title="周下载统计"
+              data={charts?.weeklyStats ?? []}
+              type="bar"
+              height={280}
+              loading={loading}
+            />
+          </Col>
+        </Row>
+      </div>
 
-          {/* 待办事项 - 时间线样式 */}
-          <Card title="今日待办" className="todo-timeline-card">
-            <Timeline>
-              {todoItems.map((item, index) => (
-                <Timeline.Item 
-                  key={index}
-                  label={item.time}
-                >
-                  <div className="timeline-item-content">
-                    <Tag theme={item.tagTheme as any} variant="light">{item.tag}</Tag>
-                    <div className="timeline-text">
-                      <span className="timeline-title">{item.title}</span>
-                      <span className="timeline-subtitle">{item.subtitle}</span>
-                    </div>
-                  </div>
-                </Timeline.Item>
-              ))}
-            </Timeline>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 数据趋势图表区 */}
-      <Row gutter={24} className="chart-row">
-        <Col span={8}>
-          <Card title="本周简历趋势" className="chart-card">
-            <div className="chart-placeholder">
-              <p className="chart-hint">简历数量趋势图</p>
-              <div className="mock-chart bars">
-                {[65, 80, 45, 90, 120, 85, 128].map((h, i) => (
-                  <div key={i} className="bar" style={{ height: `${h}%` }}></div>
-                ))}
-              </div>
-              <div className="chart-labels">
-                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+      {/* 来源分析 */}
+      <div className="dashboard-section">
+        <h2 className="section-title">用户来源分析</h2>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <StatsChart
+              title="流量来源分布"
+              data={charts?.sourceDistribution ?? []}
+              type="doughnut"
+              height={280}
+              loading={loading}
+            />
+          </Col>
+          <Col xs={24} lg={12}>
+            <div className="dashboard-info-card">
+              <h3>数据说明</h3>
+              <ul>
+                <li><strong>日活跃用户：</strong>每日独立访问用户数</li>
+                <li><strong>下载量：</strong>简历/文档等资源下载次数</li>
+                <li><strong>搜索量：</strong>平台内搜索请求总数</li>
+                <li><strong>数据更新：</strong>每 30 秒自动刷新</li>
+              </ul>
+              <div className="dashboard-tip">
+                💡 提示：点击右上角刷新按钮可手动更新数据
               </div>
             </div>
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card title="职位效果对比" className="chart-card">
-            <div className="chart-placeholder">
-              <p className="chart-hint">职位收到的简历数</p>
-              <div className="mock-chart horizontal-bars">
-                {[
-                  { label: '前端工程师', value: 85 },
-                  { label: '产品经理', value: 60 },
-                  { label: 'UI设计师', value: 45 },
-                ].map((item, i) => (
-                  <div key={i} className="h-bar-row">
-                    <span className="h-bar-label">{item.label}</span>
-                    <div className="h-bar">
-                      <div className="h-bar-fill" style={{ width: `${item.value}%` }}></div>
-                    </div>
-                    <span className="h-bar-value">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card title="渠道来源分析" className="chart-card">
-            <div className="chart-placeholder">
-              <p className="chart-hint">简历来源分布</p>
-              <div className="mock-chart pie">
-                <div className="pie-chart">
-                  <div className="pie-segment seg1"></div>
-                  <div className="pie-segment seg2"></div>
-                  <div className="pie-segment seg3"></div>
-                </div>
-                <div className="pie-legend">
-                  <span className="legend-item"><span className="dot blue"></span>上传 45%</span>
-                  <span className="legend-item"><span className="dot green"></span>邮箱 35%</span>
-                  <span className="legend-item"><span className="dot orange"></span>其他 20%</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 }
