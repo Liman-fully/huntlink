@@ -40,7 +40,7 @@ export class CandidateService {
   ) {}
 
   /**
-   * 搜索候选人（MySQL LIKE + JSON_CONTAINS）
+   * 搜索候选人（PostgreSQL LIKE + jsonb 查询）
    */
   async searchCandidates(query: SearchCandidateDto): Promise<SearchResults> {
     const page = query.page || 1;
@@ -54,14 +54,10 @@ export class CandidateService {
       qb.andWhere(
         new Brackets(qb => {
           qb.where('candidate.name LIKE :keyword', { keyword: `%${query.keyword}%` });
-          // 搜索 JSON 中的职位和技能
+          // 搜索 JSON 中的内容（PostgreSQL: 将 jsonb 转为 text 进行 ILIKE 搜索）
           qb.orWhere(
-            `JSON_SEARCH(candidate.resume_jsonb, 'one', :keywordVal) IS NOT NULL`,
+            `candidate.resume_jsonb::text ILIKE :keywordVal`,
             { keywordVal: `%${query.keyword}%` },
-          );
-          qb.orWhere(
-            `candidate.resume_jsonb LIKE :keywordJson`,
-            { keywordJson: `%${query.keyword}%` },
           );
         }),
       );
@@ -91,14 +87,14 @@ export class CandidateService {
       });
     }
 
-    // 技能标签过滤（MySQL JSON_CONTAINS）
+    // 技能标签过滤（PostgreSQL jsonb @> 操作符）
     if (query.skills && query.skills.length > 0) {
       qb.andWhere(
         new Brackets(qb => {
           query.skills.forEach((skill, index) => {
             qb.orWhere(
-              `JSON_CONTAINS(candidate.resume_jsonb->'$.skills', :skill${index})`,
-              { [`skill${index}`]: JSON.stringify(skill) },
+              `candidate.resume_jsonb->'skills' @> :skill${index}::jsonb`,
+              { [`skill${index}`]: JSON.stringify([skill]) },
             );
           });
         }),
@@ -149,7 +145,7 @@ export class CandidateService {
   }
 
   /**
-   * 高亮显示搜索结果（应用层高亮，MySQL 不支持 ts_headline）
+   * 高亮显示搜索结果（应用层高亮）
    */
   highlightResult(candidate: Candidate, keyword: string): any {
     if (!keyword || !candidate) return candidate;

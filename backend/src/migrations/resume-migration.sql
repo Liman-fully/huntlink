@@ -1,136 +1,133 @@
--- 简历库数据库迁移脚本
+-- 简历库数据库迁移脚本 (PostgreSQL 版本)
 -- 执行时间: 2026-03-27
 
 -- 1. 简历表
-CREATE TABLE IF NOT EXISTS `resumes` (
-  `id` varchar(36) NOT NULL,
-  `userId` varchar(36) NOT NULL COMMENT '所属用户',
-  `fileName` varchar(255) NOT NULL COMMENT '原始文件名',
-  `filePath` varchar(500) NOT NULL COMMENT '文件存储路径',
-  `fileSize` int NOT NULL COMMENT '文件大小(字节)',
-  `fileType` varchar(20) NOT NULL COMMENT '文件类型: pdf/doc/docx/jpg/png',
-  `folderId` varchar(36) COMMENT '所属文件夹',
+CREATE TABLE IF NOT EXISTS resumes (
+  id VARCHAR(36) NOT NULL PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  file_size INT NOT NULL,
+  file_type VARCHAR(20) NOT NULL,
+  folder_id VARCHAR(36),
   
   -- 解析后数据
-  `parseStatus` enum('pending', 'parsed', 'failed') DEFAULT 'pending' COMMENT '解析状态',
-  `parseError` text COMMENT '解析错误信息',
+  parse_status VARCHAR(20) DEFAULT 'pending',
+  parse_error TEXT,
   
-  -- 基本信息
-  `name` varchar(50) COMMENT '姓名(脱敏)',
-  `fullName` varchar(50) COMMENT '完整姓名',
-  `phone` varchar(20) COMMENT '手机号',
-  `email` varchar(100) COMMENT '邮箱',
-  `location` varchar(100) COMMENT '现居住地',
-  `age` int COMMENT '年龄',
+  -- 解析后的结构化数据（JSON）
+  basic_info JSONB,
+  education JSONB,
+  work_experience JSONB,
+  projects JSONB,
+  skills JSONB,
+  certifications JSONB,
+  job_intention JSONB,
+  tags TEXT[],
   
-  -- 教育信息
-  `education` json COMMENT '教育经历数组',
+  -- 是否公开到人才广场
+  is_public BOOLEAN DEFAULT FALSE,
+  source VARCHAR(50) DEFAULT 'upload',
+  talent_id VARCHAR(36),
   
-  -- 工作经历
-  `workExperience` json COMMENT '工作经历数组',
-  
-  -- 项目经历
-  `projects` json COMMENT '项目经历数组',
-  
-  -- 技能标签
-  `skills` json COMMENT '技能标签数组',
-  
-  -- 求职意向
-  `jobIntention` json COMMENT '求职意向对象',
-  
-  -- 当前状态
-  `currentTitle` varchar(100) COMMENT '当前职位',
-  `currentCompany` varchar(100) COMMENT '当前公司',
-  `experience` varchar(20) COMMENT '工作年限',
-  `expectedSalary` varchar(50) COMMENT '期望薪资',
-  
-  -- 评分
-  `personalScore` int DEFAULT 0 COMMENT '个人优秀度评分(0-100)',
-  
-  -- 元数据
-  `isPublic` boolean DEFAULT false COMMENT '是否公开到人才广场',
-  `viewCount` int DEFAULT 0 COMMENT '查看次数',
-  `source` varchar(50) DEFAULT 'upload' COMMENT '来源: upload/email/external',
-  `externalId` varchar(100) COMMENT '外部ID(用于去重)',
-  `version` int DEFAULT 1 COMMENT '简历版本号',
-  
-  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deletedAt` datetime,
-  
-  PRIMARY KEY (`id`),
-  INDEX `idx_user` (`userId`),
-  INDEX `idx_folder` (`folderId`),
-  INDEX `idx_parse_status` (`parseStatus`),
-  INDEX `idx_name` (`name`),
-  INDEX `idx_phone` (`phone`),
-  INDEX `idx_external` (`externalId`),
-  INDEX `idx_public` (`isPublic`, `deletedAt`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_resumes_user_id ON resumes(user_id);
+CREATE INDEX IF NOT EXISTS idx_resumes_folder_id ON resumes(folder_id);
+CREATE INDEX IF NOT EXISTS idx_resumes_parse_status ON resumes(parse_status);
+CREATE INDEX IF NOT EXISTS idx_resumes_is_public ON resumes(is_public);
+CREATE INDEX IF NOT EXISTS idx_resumes_talent_id ON resumes(talent_id);
+
+-- 更新时间自动更新触发器
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+DROP TRIGGER IF EXISTS update_resumes_updated_at ON resumes;
+CREATE TRIGGER update_resumes_updated_at BEFORE UPDATE ON resumes
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 2. 简历文件夹表
-CREATE TABLE IF NOT EXISTS `resume_folders` (
-  `id` varchar(36) NOT NULL,
-  `userId` varchar(36) NOT NULL,
-  `name` varchar(100) NOT NULL COMMENT '文件夹名称',
-  `parentId` varchar(36) COMMENT '父文件夹ID',
-  `color` varchar(10) COMMENT '文件夹颜色',
-  `icon` varchar(50) COMMENT '文件夹图标',
-  `sort` int DEFAULT 0 COMMENT '排序',
-  `isSystem` boolean DEFAULT false COMMENT '是否系统文件夹',
-  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deletedAt` datetime,
-  
-  PRIMARY KEY (`id`),
-  INDEX `idx_user` (`userId`),
-  INDEX `idx_parent` (`parentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS resume_folders (
+  id VARCHAR(36) NOT NULL PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  parent_id VARCHAR(36),
+  description TEXT,
+  "order" INT DEFAULT 0,
+  resume_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_resume_folders_user_id ON resume_folders(user_id);
+CREATE INDEX IF NOT EXISTS idx_resume_folders_parent_id ON resume_folders(parent_id);
+
+DROP TRIGGER IF EXISTS update_resume_folders_updated_at ON resume_folders;
+CREATE TRIGGER update_resume_folders_updated_at BEFORE UPDATE ON resume_folders
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 3. 简历更新记录表(积分消费场景)
-CREATE TABLE IF NOT EXISTS `resume_updates` (
-  `id` varchar(36) NOT NULL,
-  `userId` varchar(36) NOT NULL COMMENT '消费积分的用户',
-  `resumeId` varchar(36) NOT NULL COMMENT '简历ID',
-  `fromVersion` int NOT NULL COMMENT '原版本',
-  `toVersion` int NOT NULL COMMENT '升级到版本',
-  `pointsSpent` int NOT NULL COMMENT '消耗积分',
-  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
-  
-  PRIMARY KEY (`id`),
-  INDEX `idx_user` (`userId`),
-  INDEX `idx_resume` (`resumeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS resume_updates (
+  id VARCHAR(36) NOT NULL PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  resume_id VARCHAR(36) NOT NULL,
+  from_version INT NOT NULL,
+  to_version INT NOT NULL,
+  points_spent INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_resume_updates_user_id ON resume_updates(user_id);
+CREATE INDEX IF NOT EXISTS idx_resume_updates_resume_id ON resume_updates(resume_id);
 
 -- 4. 邮箱配置表
-CREATE TABLE IF NOT EXISTS `email_configs` (
-  `id` varchar(36) NOT NULL,
-  `userId` varchar(36) NOT NULL,
-  `email` varchar(100) NOT NULL COMMENT '邮箱地址',
-  `imapHost` varchar(100) NOT NULL COMMENT 'IMAP服务器',
-  `imapPort` int NOT NULL COMMENT 'IMAP端口',
-  `imapUser` varchar(100) COMMENT 'IMAP用户名',
-  `imapPassword` varchar(255) COMMENT 'IMAP密码(加密存储)',
-  `lastSyncAt` datetime COMMENT '最后同步时间',
-  `syncEnabled` boolean DEFAULT true COMMENT '是否启用同步',
-  `autoParse` boolean DEFAULT true COMMENT '是否自动解析',
-  `targetFolderId` varchar(36) COMMENT '导入目标文件夹',
-  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deletedAt` datetime,
-  
-  PRIMARY KEY (`id`),
-  INDEX `idx_user` (`userId`),
-  UNIQUE INDEX `uk_user_email` (`userId`, `email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS email_configs (
+  id VARCHAR(36) NOT NULL PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  imap_host VARCHAR(100) NOT NULL,
+  imap_port INT NOT NULL,
+  imap_user VARCHAR(100),
+  imap_password VARCHAR(255),
+  last_sync_at TIMESTAMP,
+  sync_enabled BOOLEAN DEFAULT TRUE,
+  auto_parse BOOLEAN DEFAULT TRUE,
+  target_folder_id VARCHAR(36),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_configs_user_id ON email_configs(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_email_configs_user_email ON email_configs(user_id, email);
+
+DROP TRIGGER IF EXISTS update_email_configs_updated_at ON email_configs;
+CREATE TRIGGER update_email_configs_updated_at BEFORE UPDATE ON email_configs
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 5. 插入系统默认文件夹
-INSERT INTO `resume_folders` (`id`, `userId`, `name`, `isSystem`, `sort`) VALUES
-('folder-all', 'system', '全部简历', true, 0),
-('folder-upload', 'system', '上传简历', true, 1),
-('folder-email', 'system', '邮箱导入', true, 2);
+INSERT INTO resume_folders (id, user_id, name, "order") VALUES
+('folder-all', 'system', '全部简历', 0),
+('folder-upload', 'system', '上传简历', 1),
+('folder-email', 'system', '邮箱导入', 2)
+ON CONFLICT (id) DO NOTHING;
 
--- 6. 添加积分消费记录
-ALTER TABLE `points_transactions` 
-ADD COLUMN `resourceType` varchar(50) COMMENT '资源类型: resume_download/resume_update/advanced_search',
-ADD COLUMN `resourceId` varchar(36) COMMENT '资源ID';
+-- 6. 添加积分消费记录字段（如果表存在）
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'points_transactions') THEN
+    IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'points_transactions' AND column_name = 'resource_type') THEN
+      ALTER TABLE points_transactions ADD COLUMN resource_type VARCHAR(50);
+    END IF;
+    IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'points_transactions' AND column_name = 'resource_id') THEN
+      ALTER TABLE points_transactions ADD COLUMN resource_id VARCHAR(36);
+    END IF;
+  END IF;
+END $$;
