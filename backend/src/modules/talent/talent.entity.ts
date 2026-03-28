@@ -13,7 +13,6 @@ import {
 @Index(['jobStatus', 'location'])
 @Index(['jobStatus', 'experience'])
 @Index(['jobStatus', 'education'])
-@Index(['matchScore'])
 @Index(['createdAt'])
 export class Talent {
   @PrimaryGeneratedColumn('uuid')
