@@ -16,8 +16,8 @@ export class Interview {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
-  candidateId: string;
+  @Column({ type: 'int' })
+  candidateId: number;
 
   @ManyToOne(() => Candidate, { nullable: false })
   @JoinColumn({ name: 'candidateId' })
@@ -45,3 +45,4 @@ export class Interview {
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }
+

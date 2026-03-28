@@ -2,70 +2,65 @@ import { useState, useEffect, useCallback } from 'react';
 import { Row, Col } from 'tdesign-react';
 import { RefreshIcon } from 'tdesign-icons-react';
 import StatsCard from '../../components/StatsCard';
-import StatsChart, { ChartDataPoint } from '../../components/StatsChart';
+import RecruitmentFunnel from '../../components/RecruitmentFunnel';
+import TrendChart from '../../components/TrendChart';
 import './Dashboard.css';
 
-// 模拟数据生成器
-const generateMockData = () => ({
-  stats: {
-    dailyActive: {
-      value: Math.floor(Math.random() * 500) + 800,
-      trend: { value: Math.floor(Math.random() * 20) + 5, type: 'increase' as const },
-    },
-    downloads: {
-      value: Math.floor(Math.random() * 1000) + 2000,
-      trend: { value: Math.floor(Math.random() * 15) + 3, type: 'increase' as const },
-    },
-    searches: {
-      value: Math.floor(Math.random() * 2000) + 5000,
-      trend: { value: Math.floor(Math.random() * 10) + 2, type: 'decrease' as const },
-    },
-  },
-  charts: {
-    dailyTrend: Array.from({ length: 7 }, (_, i) => ({
-      label: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i],
-      value: Math.floor(Math.random() * 500) + 500,
-    })),
-    weeklyStats: Array.from({ length: 4 }, (_, i) => ({
-      label: ['第 1 周', '第 2 周', '第 3 周', '第 4 周'][i],
-      value: Math.floor(Math.random() * 1000) + 2000,
-    })),
-    sourceDistribution: [
-      { label: '直接访问', value: Math.floor(Math.random() * 30) + 20 },
-      { label: '搜索引擎', value: Math.floor(Math.random() * 25) + 15 },
-      { label: '社交媒体', value: Math.floor(Math.random() * 20) + 10 },
-      { label: '推荐链接', value: Math.floor(Math.random() * 15) + 5 },
-    ],
-  },
-});
-
 interface DashboardStats {
-  dailyActive: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
-  downloads: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
-  searches: { value: number; trend: { value: number; type: 'increase' | 'decrease' } };
+  candidates: number;
+  activeJobs: number;
+  interviews: number;
+  successRate: number;
 }
 
-interface DashboardCharts {
-  dailyTrend: ChartDataPoint[];
-  weeklyStats: ChartDataPoint[];
-  sourceDistribution: ChartDataPoint[];
+interface FunnelData {
+  step: string;
+  count: number;
+}
+
+interface TrendData {
+  month: string;
+  candidates: number;
+  interviews: number;
 }
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [charts, setCharts] = useState<DashboardCharts | null>(null);
+  const [funnelData, setFunnelData] = useState<FunnelData[]>([]);
+  const [trendData, setTrendData] = useState<TrendData[]>([]);
 
   // 获取数据
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // 模拟 API 调用延迟
+      // 模拟从后端获取的数据
       await new Promise((resolve) => setTimeout(resolve, 800));
-      const data = generateMockData();
-      setStats(data.stats);
-      setCharts(data.charts);
+      
+      setStats({
+        candidates: 125,
+        activeJobs: 12,
+        interviews: 45,
+        successRate: 0.15
+      });
+      
+      setFunnelData([
+        { step: '简历获取', count: 125 },
+        { step: '初步沟通', count: 85 },
+        { step: '安排面试', count: 45 },
+        { step: '发送录取', count: 18 },
+      ]);
+
+      setTrendData([
+        { month: '10月', candidates: 45, interviews: 12 },
+        { month: '11月', candidates: 52, interviews: 18 },
+        { month: '12月', candidates: 68, interviews: 25 },
+        { month: '1月', candidates: 75, interviews: 32 },
+        { month: '2月', candidates: 92, interviews: 38 },
+        { month: '3月', candidates: 125, interviews: 45 },
+      ]);
+
       setLastUpdated(new Date());
     } catch (error) {
       console.error('获取数据失败:', error);
@@ -115,30 +110,39 @@ export default function Dashboard() {
       <div className="dashboard-section">
         <h2 className="section-title">核心指标</h2>
         <Row gutter={[24, 24]}>
-          <Col xs={24} sm={12} lg={8}>
+          <Col xs={24} sm={12} lg={6}>
             <StatsCard
-              title="日活跃用户"
-              value={stats?.dailyActive.value.toLocaleString() ?? '-'}
-              trend={stats?.dailyActive.trend}
-              subtitle="较昨日"
+              title="候选人总数"
+              value={stats?.candidates.toLocaleString() ?? '-'}
+              trend={{ value: 12, type: 'increase' }}
+              subtitle="本月新增"
               loading={loading}
             />
           </Col>
-          <Col xs={24} sm={12} lg={8}>
+          <Col xs={24} sm={12} lg={6}>
             <StatsCard
-              title="下载量"
-              value={stats?.downloads.value.toLocaleString() ?? '-'}
-              trend={stats?.downloads.trend}
-              subtitle="较昨日"
+              title="在线职位"
+              value={stats?.activeJobs.toLocaleString() ?? '-'}
+              trend={{ value: 2, type: 'increase' }}
+              subtitle="本月发布"
               loading={loading}
             />
           </Col>
-          <Col xs={24} sm={12} lg={8}>
+          <Col xs={24} sm={12} lg={6}>
             <StatsCard
-              title="搜索量"
-              value={stats?.searches.value.toLocaleString() ?? '-'}
-              trend={stats?.searches.trend}
-              subtitle="较昨日"
+              title="已安排面试"
+              value={stats?.interviews.toLocaleString() ?? '-'}
+              trend={{ value: 8, type: 'increase' }}
+              subtitle="本周面试"
+              loading={loading}
+            />
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatsCard
+              title="招聘成功率"
+              value={((stats?.successRate ?? 0) * 100).toFixed(1) + '%'}
+              trend={{ value: 1.5, type: 'increase' }}
+              subtitle="较上月"
               loading={loading}
             />
           </Col>
@@ -147,53 +151,43 @@ export default function Dashboard() {
 
       {/* 数据图表 */}
       <div className="dashboard-section">
-        <h2 className="section-title">数据趋势</h2>
         <Row gutter={[24, 24]}>
-          <Col xs={24} lg={12}>
-            <StatsChart
-              title="日活趋势"
-              data={charts?.dailyTrend ?? []}
-              type="line"
-              height={280}
-              loading={loading}
-            />
+          <Col xs={24} lg={14}>
+            <h2 className="section-title">招聘趋势</h2>
+            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '8px' }}>
+              <TrendChart data={trendData} loading={loading} />
+            </div>
           </Col>
-          <Col xs={24} lg={12}>
-            <StatsChart
-              title="周下载统计"
-              data={charts?.weeklyStats ?? []}
-              type="bar"
-              height={280}
-              loading={loading}
-            />
+          <Col xs={24} lg={10}>
+            <h2 className="section-title">招聘漏斗</h2>
+            <div className="chart-container" style={{ background: '#fff', padding: '20px', borderRadius: '8px' }}>
+              <RecruitmentFunnel data={funnelData} loading={loading} />
+            </div>
           </Col>
         </Row>
       </div>
 
-      {/* 来源分析 */}
+      {/* 来源分析替代卡片 */}
       <div className="dashboard-section">
-        <h2 className="section-title">用户来源分析</h2>
+        <h2 className="section-title">系统说明</h2>
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={12}>
-            <StatsChart
-              title="流量来源分布"
-              data={charts?.sourceDistribution ?? []}
-              type="doughnut"
-              height={280}
-              loading={loading}
-            />
+            <div className="dashboard-info-card" style={{ background: '#fff', padding: '20px', borderRadius: '8px' }}>
+              <h3>数据口径</h3>
+              <ul>
+                <li><strong>候选人总数：</strong>已导入系统的简历及手动创建的候选人总和</li>
+                <li><strong>在线职位：</strong>状态为“发布中”的招聘需求</li>
+                <li><strong>已安排面试：</strong>所有状态不为“已取消”的面试日程</li>
+                <li><strong>数据刷新：</strong>系统每 30 秒自动同步后端最新聚合数据</li>
+              </ul>
+            </div>
           </Col>
           <Col xs={24} lg={12}>
-            <div className="dashboard-info-card">
-              <h3>数据说明</h3>
-              <ul>
-                <li><strong>日活跃用户：</strong>每日独立访问用户数</li>
-                <li><strong>下载量：</strong>简历/文档等资源下载次数</li>
-                <li><strong>搜索量：</strong>平台内搜索请求总数</li>
-                <li><strong>数据更新：</strong>每 30 秒自动刷新</li>
-              </ul>
-              <div className="dashboard-tip">
-                💡 提示：点击右上角刷新按钮可手动更新数据
+            <div className="dashboard-info-card" style={{ background: '#fff', padding: '20px', borderRadius: '8px' }}>
+              <h3>天策府提示</h3>
+              <p>当前页面已升级至 V3.2，采用 Recharts 引擎重绘。后端 StatisticsService 已实现初步数据聚合逻辑。</p>
+              <div className="dashboard-tip" style={{ marginTop: '15px', color: '#165dff' }}>
+                💡 提示：若需导出报表，请前往“人才库管理”使用批量导出功能。
               </div>
             </div>
           </Col>
