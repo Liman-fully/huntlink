@@ -64,9 +64,25 @@ services:
     networks:
       - huntlink-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: huntlink-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - huntlink-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 5s
+      retries: 5
+
 networks:
   huntlink-network:
     driver: bridge
 
 volumes:
   postgres-data:
+  redis-data:

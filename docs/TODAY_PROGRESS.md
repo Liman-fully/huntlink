@@ -12,8 +12,9 @@
 | 指标 | 目标 | 实际 | 状态 |
 |------|------|------|------|
 | 活跃成员 | 3+ | 3 | ✅ |
-| 完成任务 | 15 | 10 | 🟡 进行中 |
+| 完成任务 | 20 | 13 | 🟡 进行中 |
 | 部署成功 | 2 | 0 | ⏳ |
+| Bug 修复 | 7 | 0/7 | ⏳ 进行中 |
 
 ---
 
@@ -23,9 +24,9 @@
 
 | 称呼 | 设备 | 加入时间 | 当前任务 | 最后同步 | 状态 |
 |------|------|---------|---------|---------|------|
-| 左护法 | workspace | 2026-03-27 | 统筹协调 + COS 配置 | 21:52 | 🟢 |
-| 都统 | workspace | 2026-03-27 | PostgreSQL 部署 | 21:52 | 🟢 |
-| 右护法 | workspace | 2026-03-27 | Redis 缓存 + Keyset 分页 | 21:52 | 🟢 |
+| 左护法 | workspace | 2026-03-27 | Bug 修复 (001-004) + 统筹 | 23:36 | 🟢 |
+| 都统 | workspace | 2026-03-27 | BUG-005 Redis 部署（子代理） | 23:36 | 🟢 |
+| 右护法 | workspace | 2026-03-27 | BUG-006/007 测试验证（子代理） | 23:36 | 🟢 |
 
 **如何登记**：
 ```markdown
@@ -52,62 +53,84 @@
 ### 神机营（都统）
 
 **设备**: workspace  
-**今日目标**: Bug 修复 + Redis 部署
+**今日目标**: BUG-005 Redis 部署
 
 | 时间 | 进展 | 配置/问题 |
 |------|------|----------|
 | 07:00-08:10 | 完成 10 个 UI 任务 | 全部验收通过 |
-| 23:30 | 待命 - 准备 Redis 部署 | 待领取 BUG-005 |
+| 23:36 | 启动子代理执行 BUG-005 | Redis 部署中 |
+| 23:37 | ✅ 完成 BUG-005 | docker-compose.yml + .env.example + deploy-redis.sh |
 
 ### 镇抚司（右护法）
 
 **设备**: workspace  
-**今日目标**: 测试执行 + 健康检查
+**今日目标**: BUG-006/007 测试验证
 
 | 时间 | 进展 | 配置/问题 |
 |------|------|----------|
 | 11:32 | 完成 P0 任务 7/7 | 搜索功能完成 |
-| 23:30 | 创建测试脚本 | ✅ 已完成 |
-| 23:30 | 待执行功能测试 | 待领取 BUG-006/007 |
+| 23:30 | 创建测试脚本 | ✅ comprehensive-test.sh |
+| 23:36 | 启动子代理执行测试 | 测试进行中 |
 
 ---
 
 ## 🔧 配置记录（重要！）
 
-### 数据库配置
+### 数据库配置（PostgreSQL）
 
 ```bash
-DATABASE_URL=mysql://root:password@localhost:3306/huntlink
-# 待升级：postgresql://huntlink:password@localhost:5432/huntlink
+# Docker Compose 配置
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=huntlink
+DB_PASSWORD=huntlink_user_password_2026
+DB_DATABASE=huntlink
+
+# 本地开发
+DATABASE_URL=postgresql://huntlink:huntlink_user_password_2026@localhost:5432/huntlink
 ```
 
 ### 环境变量
 
 ```bash
-JWT_SECRET=your_secret_key
-# 待添加：
-COS_SECRET_ID=<待配置>
-COS_SECRET_KEY=<待配置>
-COS_BUCKET=<待配置>
-COS_REGION=<待配置>
+# JWT 配置
+JWT_SECRET=HuntLink_Secret_Key_2026_LocalDev_!@#$
+JWT_EXPIRATION=7d
+
+# 腾讯云 COS 配置（待用户填写）
+COS_SECRET_ID=<待配置 - 联系司命大人获取>
+COS_SECRET_KEY=<待配置 - 联系司命大人获取>
+COS_BUCKET=huntlink-1306109984
+COS_REGION=ap-guangzhou
+
+# Redis 配置（待部署）
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 ```
 
 ### 已安装依赖
 
 ```bash
+# 核心依赖
 npm install @nestjs/config
-npm install mysql2
-# 待添加：
-npm install pg
 npm install @nestjs/typeorm
+npm install pg
+npm install ioredis
+npm install cos-nodejs-sdk-v5
 ```
 
-### 已知问题
+### 已知问题（Bug 修复中）
 
-| 问题 | 解决方案 | 状态 |
-|------|---------|------|
-| PostgreSQL 未部署 | 都统负责部署 | ⏳ |
-| COS 密钥未配置 | 左护法协调 | ⏳ |
+| 问题 | 解决方案 | 状态 | 执行者 |
+|------|---------|------|--------|
+| BUG-001 部署未验证 | SSH 登录检查 | 🟡 进行中 | 左护法 |
+| BUG-002 COS 密钥未配置 | 配置.env 文件 | ⏳ 等待密钥 | 左护法 |
+| BUG-003 文档内容重复 | 清理 TODAY_PROGRESS | 🟡 进行中 | 左护法 |
+| BUG-004 文档 MySQL 描述 | 更新为 PostgreSQL | 🟡 进行中 | 左护法 |
+| BUG-005 Redis 未部署 | Docker 部署 | 🟡 子代理执行 | 都统 |
+| BUG-006 测试未执行 | 运行测试脚本 | 🟡 子代理执行 | 右护法 |
+| BUG-007 健康检查未验证 | 运行 health-check | 🟡 子代理执行 | 右护法 |
 
 ---
 
