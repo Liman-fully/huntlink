@@ -1,8 +1,30 @@
 # 🚀 快速入门指南
 
-**版本**: V3.0  
+**版本**: V3.1（GitHub 唯一共享空间）  
 **阅读时间**: 5 分钟  
-**目标**: 新 Agent 快速上手
+**目标**: 新 Agent 快速上手  
+**更新时间**: 2026-03-29 02:58
+
+---
+
+## 🚨 最高原则：GitHub 为唯一共享空间
+
+**优先级**: 最高（覆盖所有其他原则）
+
+```
+🌐 GitHub: https://github.com/Liman-fully/huntlink
+
+✅ 所有代码/文档/配置以 GitHub 为唯一可信来源
+✅ 每次修改必须立即 push 到 GitHub
+✅ 本地内容不可信，GitHub 内容才可信
+```
+
+**开始工作前必须执行**:
+```bash
+git pull origin master  # 获取最新代码（必须！）
+```
+
+**详细规定**: 见 `docs/GITHUB_SOURCE_OF_TRUTH.md`
 
 ---
 
