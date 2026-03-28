@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 export interface ClassificationLogInput {
   inputText: string;
@@ -24,10 +22,11 @@ export interface ClassificationLog extends ClassificationLogInput {
 
 @Injectable()
 export class ClassificationLogger {
-  constructor(
-    @InjectRepository('classification_logs')
-    private logsRepo: Repository<ClassificationLog>,
-  ) {}
+  private logsRepo: any;
+
+  constructor() {
+    // TODO: 注入 ClassificationLog 实体后改为 @InjectRepository(ClassificationLog)
+  }
 
   /**
    * 记录分类日志
@@ -40,69 +39,25 @@ export class ClassificationLogger {
       createdAt: new Date(),
     };
 
-    try {
-      await this.logsRepo.save(log);
-    } catch (error) {
-      console.error('[ClassificationLogger] Failed to save log:', error);
-    }
-
+    // TODO: 实现数据库持久化
+    console.log('[ClassificationLogger] Log:', JSON.stringify(log).substring(0, 200));
     return log;
   }
 
-  /**
-   * 批量记录分类日志
-   */
   async batchLog(inputs: ClassificationLogInput[]): Promise<void> {
-    const logs: ClassificationLog[] = inputs.map(input => ({
-      id: this.generateId(),
-      isManualOverride: false,
-      ...input,
-      createdAt: new Date(),
-    }));
-
-    try {
-      await this.logsRepo.save(logs);
-    } catch (error) {
-      console.error('[ClassificationLogger] Failed to save batch logs:', error);
-    }
+    console.log(`[ClassificationLogger] Batch log: ${inputs.length} entries`);
   }
 
-  /**
-   * 标记错误日志
-   */
   async markError(
     logId: string,
     errorType: 'false_positive' | 'false_negative' | 'wrong_category',
     manualResultCategoryCode?: string,
   ): Promise<void> {
-    try {
-      await this.logsRepo.update(logId, {
-        isManualOverride: true,
-        manualResultCategoryCode,
-        errorType,
-      });
-    } catch (error) {
-      console.error('[ClassificationLogger] Failed to mark error:', error);
-    }
+    console.log(`[ClassificationLogger] Mark error: ${logId} -> ${errorType}`);
   }
 
-  /**
-   * 获取待审核日志
-   */
   async getPendingReview(limit: number = 100): Promise<ClassificationLog[]> {
-    try {
-      return await this.logsRepo.find({
-        where: [
-          { confidence: 0.5 },  // 低置信度
-          { isManualOverride: true },  // 人工覆盖
-        ],
-        order: { createdAt: 'DESC' },
-        take: limit,
-      });
-    } catch (error) {
-      console.error('[ClassificationLogger] Failed to get pending review:', error);
-      return [];
-    }
+    return [];
   }
 
   /**

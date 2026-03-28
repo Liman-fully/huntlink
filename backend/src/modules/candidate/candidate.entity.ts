@@ -1,8 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Index,
+} from 'typeorm';
 
-@Injectable()
+@Entity('candidates')
+@Index(['city'])
+@Index(['education_level'])
+@Index(['work_years'])
 export class Candidate {
   @PrimaryGeneratedColumn()
   id: number;
@@ -10,6 +17,7 @@ export class Candidate {
   @Column({ length: 50 })
   name: string;
 
+  @Index({ unique: true })
   @Column({ length: 20, unique: true })
   mobile: string;
 
@@ -25,15 +33,15 @@ export class Candidate {
   @Column({ name: 'education_level', nullable: true })
   educationLevel: number;  // 1:本科，2:硕士，3:博士
 
-  @Column({ name: 'resume_jsonb', type: 'jsonb', nullable: true })
+  @Column({ name: 'resume_jsonb', type: 'json', nullable: true })
   resumeJsonb: any;
-
-  @Column({ name: 'search_context', type: 'tsvector', nullable: true })
-  searchContext: any;
 
   @Column({ name: 'resume_url', length: 255, nullable: true })
   resumeUrl: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @Column({ name: 'is_verified', default: false })
+  isVerified: boolean;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

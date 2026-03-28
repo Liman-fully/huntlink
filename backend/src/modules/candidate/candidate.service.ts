@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Brackets } from 'typeorm';
+import { Repository, Like, Brackets } from 'typeorm';
 import { Candidate } from './candidate.entity';
 
 export interface SearchCandidateDto {
-  keyword?: string;        // 关键词搜索（职位/技能）
+  keyword?: string;        // 关键词搜索（姓名/职位/技能）
   city?: string;           // 城市
   educationLevel?: number; // 学历（1:本科，2:硕士，3:博士）
   workYearsMin?: number;   // 最小工作年限
@@ -24,6 +24,14 @@ export interface SearchResults {
   totalPages: number;
 }
 
+const EDUCATION_LABELS: Record<number, string> = {
+  1: '本科',
+  2: '硕士',
+  3: '博士',
+  4: '大专',
+  5: '高中及以下',
+};
+
 @Injectable()
 export class CandidateService {
   constructor(
@@ -32,22 +40,31 @@ export class CandidateService {
   ) {}
 
   /**
-   * 搜索候选人（基于 PostgreSQL GIN 索引 + tsvector）
+   * 搜索候选人（MySQL LIKE + JSON_CONTAINS）
    */
   async searchCandidates(query: SearchCandidateDto): Promise<SearchResults> {
     const page = query.page || 1;
-    const limit = Math.min(query.limit || 20, 100); // 最大 100 条
+    const limit = Math.min(query.limit || 20, 100);
     const offset = (page - 1) * limit;
 
-    // 构建查询
     const qb = this.candidateRepo.createQueryBuilder('candidate');
 
-    // 全文搜索（使用 GIN 索引）
+    // 关键词搜索 - 搜索姓名
     if (query.keyword) {
-      const tsquery = this.buildTsQuery(query.keyword);
-      qb.andWhere('candidate.search_context @@ to_tsquery(:tsquery)', { tsquery })
-        .addSelect('ts_rank(candidate.search_context, to_tsquery(:tsquery))', 'rank')
-        .addOrderBy('rank', 'DESC');
+      qb.andWhere(
+        new Brackets(qb => {
+          qb.where('candidate.name LIKE :keyword', { keyword: `%${query.keyword}%` });
+          // 搜索 JSON 中的职位和技能
+          qb.orWhere(
+            `JSON_SEARCH(candidate.resume_jsonb, 'one', :keywordVal) IS NOT NULL`,
+            { keywordVal: `%${query.keyword}%` },
+          );
+          qb.orWhere(
+            `candidate.resume_jsonb LIKE :keywordJson`,
+            { keywordJson: `%${query.keyword}%` },
+          );
+        }),
+      );
     }
 
     // 城市过滤
@@ -57,48 +74,51 @@ export class CandidateService {
 
     // 学历过滤
     if (query.educationLevel) {
-      qb.andWhere('candidate.education_level >= :educationLevel', { 
-        educationLevel: query.educationLevel 
+      qb.andWhere('candidate.education_level >= :educationLevel', {
+        educationLevel: query.educationLevel,
       });
     }
 
     // 工作年限过滤
     if (query.workYearsMin !== undefined) {
-      qb.andWhere('candidate.work_years >= :workYearsMin', { 
-        workYearsMin: query.workYearsMin 
+      qb.andWhere('candidate.work_years >= :workYearsMin', {
+        workYearsMin: query.workYearsMin,
       });
     }
     if (query.workYearsMax !== undefined) {
-      qb.andWhere('candidate.work_years <= :workYearsMax', { 
-        workYearsMax: query.workYearsMax 
+      qb.andWhere('candidate.work_years <= :workYearsMax', {
+        workYearsMax: query.workYearsMax,
       });
     }
 
-    // 技能标签过滤（JSONB 查询）
+    // 技能标签过滤（MySQL JSON_CONTAINS）
     if (query.skills && query.skills.length > 0) {
-      qb.andWhere(new Brackets(qb => {
-        query.skills.forEach((skill, index) => {
-          qb.orWhere(`candidate.resume_jsonb->'skills' @> :skill${index}`, {
-            [`skill${index}`]: JSON.stringify([skill]),
+      qb.andWhere(
+        new Brackets(qb => {
+          query.skills.forEach((skill, index) => {
+            qb.orWhere(
+              `JSON_CONTAINS(candidate.resume_jsonb->'$.skills', :skill${index})`,
+              { [`skill${index}`]: JSON.stringify(skill) },
+            );
           });
-        });
-      }));
+        }),
+      );
     }
 
     // 排序
+    const sortOrder = query.sortOrder || 'DESC';
     if (query.sortBy === 'work_years') {
-      qb.orderBy('candidate.work_years', query.sortOrder || 'DESC');
+      qb.orderBy('candidate.work_years', sortOrder);
     } else if (query.sortBy === 'created_at') {
-      qb.orderBy('candidate.created_at', query.sortOrder || 'DESC');
-    } else if (!query.keyword) {
-      // 无关键词时默认按创建时间排序
+      qb.orderBy('candidate.created_at', sortOrder);
+    } else {
+      // 默认按创建时间排序
       qb.orderBy('candidate.created_at', 'DESC');
     }
 
     // 分页
     qb.skip(offset).take(limit);
 
-    // 执行查询
     const [data, total] = await qb.getManyAndCount();
 
     return {
@@ -111,75 +131,66 @@ export class CandidateService {
   }
 
   /**
-   * 构建 PostgreSQL tsquery
-   * 支持中文分词和同义词扩展
+   * 获取搜索建议（自动补全）- 基于城市名和姓名
    */
-  private buildTsQuery(keyword: string): string {
-    // 清理特殊字符
-    const cleaned = keyword
-      .replace(/[&|!()<>]/g, ' ')  // 移除布尔运算符
-      .trim();
-
-    // 按空格分词，使用 & 连接（AND 逻辑）
-    const terms = cleaned.split(/\s+/).filter(t => t.length > 0);
-    
-    if (terms.length === 0) {
-      return "''";
+  async getSearchSuggestions(query: string, limit: number = 5): Promise<string[]> {
+    if (!query || query.length < 1) {
+      return [];
     }
 
-    // 使用 & 连接所有词（必须同时匹配）
-    return terms.map(t => `${t}:*`).join(' & ');
+    const results = await this.candidateRepo
+      .createQueryBuilder('candidate')
+      .select('DISTINCT candidate.city', 'suggestion')
+      .where('candidate.city LIKE :query', { query: `${query}%` })
+      .limit(limit)
+      .getRawMany();
+
+    return results.map(r => r.suggestion).filter(Boolean);
   }
 
   /**
-   * 高亮显示搜索结果
+   * 高亮显示搜索结果（应用层高亮，MySQL 不支持 ts_headline）
    */
-  async highlightResult(candidateId: number, keyword: string): Promise<any> {
-    const candidate = await this.candidateRepo.findOne({ where: { id: candidateId } });
-    
-    if (!candidate) {
-      throw new Error('候选人不存在');
-    }
+  highlightResult(candidate: Candidate, keyword: string): any {
+    if (!keyword || !candidate) return candidate;
 
-    const tsquery = this.buildTsQuery(keyword);
-    
-    // 使用 ts_headline 高亮
-    const result = await this.candidateRepo.query(`
-      SELECT 
-        id,
-        name,
-        ts_headline('chinese', resume_jsonb->>'work_experience_text', to_tsquery($1), 
-          'StartSel=<b>, StopSel=</b>, MaxFragments=3, FragmentDelimiter=" ... "') 
-        as highlighted_experience
-      FROM candidates
-      WHERE id = $2
-    `, [tsquery, candidateId]);
+    const highlightText = (text: string): string => {
+      if (!text) return '';
+      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return text.replace(regex, '<b>$1</b>');
+    };
 
+    // 解析 JSON 数据进行高亮
+    const resumeData = candidate.resumeJsonb || {};
     return {
       ...candidate,
-      highlightedExperience: result[0]?.highlighted_experience || '',
+      highlightedName: highlightText(candidate.name),
+      highlightedTitle: resumeData.currentTitle ? highlightText(resumeData.currentTitle) : '',
+      highlightedCompany: resumeData.currentCompany ? highlightText(resumeData.currentCompany) : '',
     };
   }
 
   /**
-   * 获取搜索建议（自动补全）
+   * 获取单个候选人详情
    */
-  async getSearchSuggestions(query: string, limit: number = 5): Promise<string[]> {
-    if (!query || query.length < 2) {
-      return [];
-    }
+  async findOne(id: number): Promise<Candidate> {
+    return this.candidateRepo.findOne({ where: { id } });
+  }
 
-    // 从历史搜索中获取热门建议
-    const suggestions = await this.candidateRepo.query(`
-      SELECT DISTINCT city as suggestion
-      FROM candidates
-      WHERE city ILIKE $1 || '%'
-      GROUP BY city
-      ORDER BY COUNT(*) DESC
-      LIMIT $2
-    `, [query, limit]);
+  /**
+   * 创建候选人
+   */
+  async create(candidateData: Partial<Candidate>): Promise<Candidate> {
+    const candidate = this.candidateRepo.create(candidateData);
+    return this.candidateRepo.save(candidate);
+  }
 
-    return suggestions.map(s => s.suggestion);
+  /**
+   * 更新候选人
+   */
+  async update(id: number, data: Partial<Candidate>): Promise<Candidate> {
+    await this.candidateRepo.update(id, data);
+    return this.findOne(id);
   }
 
   /**
@@ -187,54 +198,57 @@ export class CandidateService {
    */
   async getSearchStats(query: SearchCandidateDto): Promise<any> {
     const baseQb = this.candidateRepo.createQueryBuilder('candidate');
-    
+
     // 应用搜索条件
     if (query.keyword) {
-      const tsquery = this.buildTsQuery(query.keyword);
-      baseQb.andWhere('candidate.search_context @@ to_tsquery(:tsquery)', { tsquery });
+      baseQb.andWhere(
+        new Brackets(qb => {
+          qb.where('candidate.name LIKE :keyword', { keyword: `%${query.keyword}%` });
+          qb.orWhere(
+            `candidate.resume_jsonb LIKE :keywordJson`,
+            { keywordJson: `%${query.keyword}%` },
+          );
+        }),
+      );
     }
     if (query.city) {
       baseQb.andWhere('candidate.city = :city', { city: query.city });
     }
 
-    // 城市分布
-    const cityStats = await baseQb
-      .clone()
-      .select('city', 'city')
+    // 城市分布 TOP 10
+    const cityStats = await this.candidateRepo
+      .createQueryBuilder('candidate')
+      .select('candidate.city', 'label')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('city')
+      .groupBy('candidate.city')
       .orderBy('count', 'DESC')
       .limit(10)
       .getRawMany();
 
     // 学历分布
-    const educationStats = await baseQb
-      .clone()
-      .select('education_level', 'level')
+    const educationStats = await this.candidateRepo
+      .createQueryBuilder('candidate')
+      .select('candidate.education_level', 'level')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('education_level')
-      .orderBy('level', 'ASC')
-      .getRawMany();
+      .where('candidate.education_level IS NOT NULL')
+      .groupBy('candidate.education_level')
+      .orderBy('candidate.education_level', 'ASC')
+      .getRawMany()
+      .then(rows => rows.map(r => ({
+        level: r.level,
+        label: EDUCATION_LABELS[r.level] || '未知',
+        count: Number(r.count),
+      })));
 
     // 工作年限分布
-    const workYearStats = await baseQb
-      .clone()
-      .select(`
-        CASE 
-          WHEN work_years < 3 THEN '0-3 年'
-          WHEN work_years < 5 THEN '3-5 年'
-          WHEN work_years < 10 THEN '5-10 年'
-          ELSE '10 年以上'
-        END
-      `, 'range')
+    const workYearStats = await this.candidateRepo
+      .createQueryBuilder('candidate')
+      .select("CASE WHEN candidate.work_years < 3 THEN '0-3年' WHEN candidate.work_years < 5 THEN '3-5年' WHEN candidate.work_years < 10 THEN '5-10年' ELSE '10年以上' END", 'range')
       .addSelect('COUNT(*)', 'count')
+      .where('candidate.work_years IS NOT NULL')
       .groupBy('range')
       .getRawMany();
 
-    return {
-      cityStats,
-      educationStats,
-      workYearStats,
-    };
+    return { cityStats, educationStats, workYearStats };
   }
 }

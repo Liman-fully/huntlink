@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface ClassificationRule {
+export interface ClassificationRule {
   code: string;
   name: string;
   keywords: string[];
@@ -33,7 +33,7 @@ interface PositionKeywords {
   };
 }
 
-interface ClassificationResult {
+export interface ClassificationResult {
   industryCode?: string;
   industryName?: string;
   categoryCode?: string;
