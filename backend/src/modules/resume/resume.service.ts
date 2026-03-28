@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as Express from 'express';
 import { Resume } from './resume.entity';
 import { ResumeFolder } from './resume-folder.entity';
+import { CosService } from '../../common/storage/cos.service';
 
 interface ParseResult {
   basicInfo?: any;
@@ -24,6 +25,7 @@ export class ResumeService {
     private resumeRepository: Repository<Resume>,
     @InjectRepository(ResumeFolder)
     private folderRepository: Repository<ResumeFolder>,
+    private cosService: CosService,
   ) {}
 
   async uploadResume(
@@ -31,7 +33,7 @@ export class ResumeService {
     file: any,
     folderId?: string,
   ): Promise<Resume> {
-    // 保存文件
+    // 保存文件到本地作为备份
     const uploadDir = path.join(process.cwd(), 'uploads', 'resumes', userId);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -41,13 +43,35 @@ export class ResumeService {
     const filePath = path.join(uploadDir, fileName);
     fs.writeFileSync(filePath, file.buffer);
 
+    // 上传文件到 COS
+    let cosUrl: string;
+    let cosKey: string;
+    try {
+      const result = await this.cosService.uploadResume(
+        userId,
+        file.buffer,
+        file.originalname,
+      );
+      cosUrl = result.url;
+      cosKey = result.key;
+    } catch (error) {
+      // 如果 COS 上传失败，删除本地文件并抛出错误
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      throw new BadRequestException(`COS 上传失败: ${error.message}`);
+    }
+
     // 创建简历记录
     const resume = this.resumeRepository.create({
       userId,
       filePath,
+      localPath: filePath,
       fileName: file.originalname,
       fileSize: file.size,
       fileType: this.getFileType(file.originalname),
+      cosUrl,
+      cosKey,
       folderId,
       parseStatus: 'pending',
     });
@@ -184,9 +208,19 @@ export class ResumeService {
       throw new BadRequestException('简历不存在');
     }
 
-    // 删除文件
-    if (fs.existsSync(resume.filePath)) {
-      fs.unlinkSync(resume.filePath);
+    // 删除 COS 文件
+    if (resume.cosKey) {
+      try {
+        await this.cosService.deleteFile(resume.cosKey);
+      } catch (error) {
+        console.error(`删除 COS 文件失败: ${error.message}`);
+        // 继续删除本地文件和数据库记录
+      }
+    }
+
+    // 删除本地文件
+    if (resume.localPath && fs.existsSync(resume.localPath)) {
+      fs.unlinkSync(resume.localPath);
     }
 
     // 删除记录
