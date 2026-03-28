@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Card, Row, Col, Input, Button, Tag, Checkbox, Space, Dropdown, DropdownMenu, DropdownItem } from 'tdesign-react';
+import { Card, Row, Col, Input, Button, Tag, Checkbox, Dropdown } from 'tdesign-react';
 import { SearchIcon, FilterIcon, DownloadIcon, ChatIcon, FolderIcon, MoreIcon } from 'tdesign-icons-react';
-import ResumeCard from '@/components/ResumeCard';
 import './TalentMarket.css';
 
 const mockTalents = [

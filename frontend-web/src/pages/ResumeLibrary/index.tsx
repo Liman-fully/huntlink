@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Card, Row, Col, Button, Tree, Input, Upload, Dialog, Tag, Space, Tabs, TabPanel, Pagination, Checkbox, Dropdown, DropdownMenu, DropdownItem } from 'tdesign-react';
-import { PlusIcon, UploadIcon, RefreshIcon, FolderIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, DeleteIcon, MoreIcon, MailIcon } from 'tdesign-icons-react';
+import { Card, Row, Col, Button, Tree, Input, Upload, Dialog, Tag, Space, Tabs, Pagination, Checkbox, Dropdown } from 'tdesign-react';
+import { PlusIcon, UploadIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, MoreIcon, MailIcon } from 'tdesign-icons-react';
 import './ResumeLibrary.css';
 
 const mockFolders = [
@@ -133,12 +133,13 @@ export default function ResumeLibrary() {
               value={activeTab}
               onChange={(value) => setActiveTab(String(value))}
               className="resume-tabs"
-            >
-              <TabPanel value="all" label={<span>全部 <Tag size="small">156</Tag></span>} />
-              <TabPanel value="pending" label={<span>待处理 <Tag size="small" theme="warning">12</Tag></span>} />
-              <TabPanel value="parsed" label={<span>已解析 <Tag size="small" theme="success">140</Tag></span>} />
-              <TabPanel value="failed" label={<span>解析失败 <Tag size="small" theme="danger">4</Tag></span>} />
-            </Tabs>
+              list={[
+                { label: <span>全部 <Tag size="small">156</Tag></span>, value: 'all' },
+                { label: <span>待处理 <Tag size="small" theme="warning">12</Tag></span>, value: 'pending' },
+                { label: <span>已解析 <Tag size="small" theme="success">140</Tag></span>, value: 'parsed' },
+                { label: <span>解析失败 <Tag size="small" theme="danger">4</Tag></span>, value: 'failed' },
+              ]}
+            />
 
             {/* 简历列表 */}
             <div className="resume-list">
@@ -169,13 +170,12 @@ export default function ResumeLibrary() {
                     <Button theme="default" variant="text" size="small">查看</Button>
                     <Button theme="default" variant="text" size="small">下载</Button>
                     <Dropdown
-                      content={
-                        <DropdownMenu>
-                          <DropdownItem>重新解析</DropdownItem>
-                          <DropdownItem>移动到...</DropdownItem>
-                          <DropdownItem>删除</DropdownItem>
-                        </DropdownMenu>
-                      }
+                      trigger="click"
+                      options={[
+                        { content: '重新解析', value: 'reparse' },
+                        { content: '移动到...', value: 'move' },
+                        { content: '删除', value: 'delete' },
+                      ]}
                     >
                       <Button theme="default" variant="text" size="small" icon={<MoreIcon />} />
                     </Dropdown>

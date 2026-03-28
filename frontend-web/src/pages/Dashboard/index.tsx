@@ -6,7 +6,6 @@ import {
   AddIcon,
   SearchIcon,
   UploadIcon,
-  MailIcon,
   DownloadIcon,
   SettingIcon
 } from 'tdesign-icons-react';
