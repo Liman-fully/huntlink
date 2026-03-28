@@ -4,6 +4,8 @@ import { ExportTask } from './export-task.entity';
 import { Resume } from '../resume/resume.entity';
 import { ExportService } from './export.service';
 import { ExportController } from './export.controller';
+import { PdfExporter } from './pdf-exporter';
+import { ExcelExporter } from './excel-exporter';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { ExportController } from './export.controller';
   controllers: [ExportController],
   providers: [
     ExportService,
+    PdfExporter,
+    ExcelExporter,
     {
       provide: 'EXPORT_QUEUE',
       useFactory: () => {

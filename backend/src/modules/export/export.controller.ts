@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ExportService } from './export.service';
 import { ExportRequestDto, ExportFormat } from './dto/export-request.dto';
+import { TaskStatus } from './export-task.entity';
 import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -93,6 +94,3 @@ export class ExportController {
     res.download(fullPath, fileName);
   }
 }
-
-// 导入 TaskStatus 用于类型检查
-import { TaskStatus } from './export-task.entity';
