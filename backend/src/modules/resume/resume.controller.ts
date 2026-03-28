@@ -10,16 +10,21 @@ import {
   Query,
   UseGuards,
   Request,
+  Response,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResumeService } from './resume.service';
+import { CosService } from '../../common/storage/cos.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Multer } from 'multer';
 
 @Controller('resume')
 @UseGuards(JwtAuthGuard)
 export class ResumeController {
-  constructor(private readonly resumeService: ResumeService) {}
+  constructor(
+    private readonly resumeService: ResumeService,
+    private readonly cosService: CosService,
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
@@ -80,6 +85,42 @@ export class ResumeController {
   async getResume(@Request() req, @Param('id') id: string) {
     const resume = await this.resumeService.getResumeById(id, req.user.id);
     return { success: true, data: resume };
+  }
+
+  @Get(':id/download')
+  async downloadResume(
+    @Request() req,
+    @Param('id') id: string,
+    @Response() res,
+  ) {
+    const resume = await this.resumeService.getResumeById(id, req.user.id);
+    if (!resume) {
+      return res.status(404).json({ success: false, message: '简历不存在' });
+    }
+
+    if (!resume.cosUrl) {
+      return res.status(400).json({ success: false, message: '简历文件不存在' });
+    }
+
+    try {
+      // 获取签名 URL（有效期 1 小时）
+      const signedUrl = await this.cosService.getSignedUrl(resume.cosKey, 3600);
+      
+      return res.json({
+        success: true,
+        data: {
+          url: signedUrl,
+          fileName: resume.fileName,
+          fileSize: resume.fileSize,
+        },
+        message: '获取下载链接成功',
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: `获取下载链接失败: ${error.message}`,
+      });
+    }
   }
 
   @Delete(':id')

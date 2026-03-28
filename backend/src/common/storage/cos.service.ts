@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export interface UploadResult {
   success: boolean;
   url?: string;
+  key?: string;
   error?: string;
 }
 
@@ -16,7 +17,7 @@ export class CosService {
 
   constructor(private configService: ConfigService) {
     this.bucket = this.configService.get<string>('COS_BUCKET') || 'huntlink-1306109984';
-    this.region = this.configService.get<string>('COS_REGION') || 'ap-guangzhou';
+    this.region = this.configService.get<string>('COS_REGION') || 'ap-shanghai';
 
     this.cos = new COS({
       SecretId: this.configService.get<string>('COS_SECRET_ID') || '',
@@ -24,19 +25,22 @@ export class CosService {
     });
   }
 
-  async uploadResume(file: any, userId: string): Promise<UploadResult> {
+  async uploadResume(
+    userId: string,
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<{ url: string; key: string }> {
     try {
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(2, 8);
-      const key = `resumes/${userId}/${timestamp}_${randomStr}_${file.originalname}`;
+      const key = `resumes/${userId}/${timestamp}_${randomStr}_${fileName}`;
 
       await new Promise<void>((resolve, reject) => {
         this.cos.putObject({
           Bucket: this.bucket,
           Region: this.region,
           Key: key,
-          Body: file.buffer,
-          ContentType: file.mimetype,
+          Body: buffer,
         }, (err, data) => {
           if (err) reject(err);
           else resolve();
@@ -45,10 +49,10 @@ export class CosService {
 
       const url = `https://${this.bucket}.cos.${this.region}.myqcloud.com/${key}`;
       console.log(`[COS] Upload success: ${url}`);
-      return { success: true, url };
+      return { url, key };
     } catch (error) {
       console.error('[COS] Upload failed:', error);
-      return { success: false, error: error.message };
+      throw error;
     }
   }
 
@@ -66,8 +70,7 @@ export class CosService {
     });
   }
 
-  async deleteFile(url: string): Promise<void> {
-    const key = url.replace(`https://${this.bucket}.cos.${this.region}.myqcloud.com/`, '');
+  async deleteFile(key: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.cos.deleteObject({
         Bucket: this.bucket,
