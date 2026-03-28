@@ -23,6 +23,7 @@ import { PointsModule } from './modules/points/points.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { CandidateModule } from './modules/candidate/candidate.module';
+import { InterviewModule } from './modules/interview/interview.module';
 import { ExportModule } from './modules/export/export.module';
 import { DownloadModule } from './modules/download/download.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
@@ -74,6 +75,7 @@ import { ExportProcessor } from './export.processor';
     MembershipModule,
     InvitationModule,
     CandidateModule,
+    InterviewModule,
     ExportModule,
     DownloadModule,
     RecommendationModule,

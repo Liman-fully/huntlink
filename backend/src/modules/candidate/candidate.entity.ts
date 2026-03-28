@@ -42,6 +42,16 @@ export class Candidate {
   @Column({ name: 'is_verified', default: false })
   isVerified: boolean;
 
+  // 猎头业务扩展字段
+  @Column({ type: 'text', array: true, default: '{}' })
+  tags: string[];
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
+
+  @Column({ length: 50, default: 'new' })
+  status: string; // new, contacted, interviewed, offered, rejected
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
