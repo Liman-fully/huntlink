@@ -7,9 +7,6 @@ import {
 } from 'typeorm';
 
 @Entity('candidates')
-@Index(['city'])
-@Index(['education_level'])
-@Index(['work_years'])
 export class Candidate {
   @PrimaryGeneratedColumn()
   id: number;
@@ -24,12 +21,15 @@ export class Candidate {
   @Column({ length: 100, nullable: true })
   email: string;
 
+  @Index()
   @Column({ name: 'work_years', default: 0 })
   workYears: number;
 
+  @Index()
   @Column({ length: 50, nullable: true })
   city: string;
 
+  @Index()
   @Column({ name: 'education_level', nullable: true })
   educationLevel: number;  // 1:本科，2:硕士，3:博士
 
