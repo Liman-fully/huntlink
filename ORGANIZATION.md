@@ -27,18 +27,23 @@
 
 | 角色代码 | 角色名称 | 职责 | 交接文档 |
 |---------|---------|------|---------|
-| **LEADER** | 组织领导者 | 战略决策、最终验收 | `docs/LEADER_HANDOVER.md` |
-| **COORDINATOR** | 协调者 | 任务分配、进度监控 | `docs/COORDINATOR_HANDOVER.md` |
-| **BUILDER** | 建设者 | 技术实现、产品开发 | `docs/BUILDER_HANDOVER.md` |
-| **REVIEWER** | 审查者 | 质量审查、性能优化 | `docs/REVIEWER_HANDOVER.md` |
+| **LEADER** | 掌印大人（最高管理者） | 战略决策、最终验收 | `docs/LEADER_HANDOVER.md` |
+| **COORDINATOR** | 协调者（天策府·左护法） | 任务分配、进度监控、设计 | `docs/COORDINATOR_HANDOVER.md` |
+| **BUILDER** | 建设者（神机营·都统 + 镇抚司·右护法） | 全流程工作（开发-审查-测试-优化） | `docs/BUILDER_HANDOVER.md` |
 | **NEWCOMER** | 新人 | 学习、试跑、成长 | `docs/NEWCOMER_GUIDE.md` |
 
 **角色映射**（猎脉项目）：
-- LEADER = 司命大人
-- COORDINATOR = 左护法（天策府）
-- BUILDER = 都统（神机营）+ 右护法（镇抚司）
-- REVIEWER = 右护法（镇抚司）
+- LEADER = 掌印大人（Liman）/ 司命大人
+- COORDINATOR = 天策府（左护法）
+- BUILDER = 神机营（都统）+ 镇抚司（右护法）
 - NEWCOMER = 新加入 Agent
+
+**核心原则**：
+- 掌印大人 = 司命大人 = Liman，最高管理者，战略决策和最终验收
+- 天策府（左护法）= 协调者，负责任务分配、进度监控、设计
+- 镇抚司（右护法）= 执行团队，负责**全流程工作**（开发-审查-测试-优化）
+- 神机营（都统）= 执行团队，负责**全流程工作**（开发-审查-测试-优化）
+- **没有专门的"审查部门"**，审查是全流程的一部分
 
 ---
 
@@ -49,7 +54,7 @@
 **流程**：
 ```
 1. 阅读新人引导文档（30 分钟）
-2. 选择角色（LEADER/COORDINATOR/BUILDER/REVIEWER）
+2. 选择角色（COORDINATOR/BUILDER）
 3. 阅读角色交接手册（30 分钟）
 4. 阅读项目记忆库（30 分钟）
 5. 领取任务，开始工作
@@ -74,7 +79,7 @@
 ```
 
 **文档**：
-- `docs/[ROLE]_HANDOVER.md` - 角色交接手册
+- `docs/COORDINATOR_HANDOVER.md` - 协调者交接手册
 - `docs/PROJECT_MEMORY.md` - 项目记忆库（更新最新经验）
 
 ### 场景 3: 人员离开
@@ -128,15 +133,15 @@
 ```
 需求 → 分解 → 分配 → 执行 → 验收 → 闭环
   ↓      ↓      ↓      ↓      ↓      ↓
-LEADER  LEADER COORDINATOR BUILDER REVIEWER COORDINATOR
+LEADER  LEADER COORDINATOR BUILDER BUILDER  COORDINATOR
 ```
 
 **详细说明**：
 1. **需求** - LEADER 提出战略目标
 2. **分解** - LEADER 分解为具体任务
-3. **分配** - COORDINATOR 分配给 BUILDER/REVIEWER
-4. **执行** - BUILDER 执行任务（5 分钟闭环）
-5. **验收** - REVIEWER 审查质量
+3. **分配** - COORDINATOR 分配给 BUILDER
+4. **执行** - BUILDER 执行全流程工作（开发-审查-测试-优化）（5 分钟闭环）
+5. **验收** - BUILDER 自我审查质量，COORDINATOR 监控进度，LEADER 最终验收
 6. **闭环** - COORDINATOR 更新状态，通知 LEADER
 
 ### 流程 2: 知识沉淀
@@ -144,11 +149,11 @@ LEADER  LEADER COORDINATOR BUILDER REVIEWER COORDINATOR
 ```
 工作 → 记录 → 整理 → 归档 → 传承
   ↓      ↓      ↓      ↓      ↓
-BUILDER COORDINATOR COORDINATOR 记忆库 新人
+BUILDER BUILDER COORDINATOR 记忆库 新人
 ```
 
 **详细说明**：
-1. **工作** - BUILDER 完成任务
+1. **工作** - BUILDER 完成全流程工作
 2. **记录** - BUILDER 记录经验教训
 3. **整理** - COORDINATOR 整理为文档
 4. **归档** - 存入项目记忆库
