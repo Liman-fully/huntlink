@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Brackets } from 'typeorm';
 import { Candidate } from './candidate.entity';
+import { CacheService } from '../../common/cache/cache.service';
 
 export interface SearchCandidateDto {
   keyword?: string;        // 关键词搜索（姓名/职位/技能）
@@ -34,15 +35,40 @@ const EDUCATION_LABELS: Record<number, string> = {
 
 @Injectable()
 export class CandidateService {
+  private readonly CACHE_TTL = 300; // 5 分钟
+  private readonly CACHE_PREFIX = 'candidate:search';
+
   constructor(
     @InjectRepository(Candidate)
     private candidateRepo: Repository<Candidate>,
+    private cacheService: CacheService,
   ) {}
 
   /**
    * 搜索候选人（PostgreSQL LIKE + jsonb 查询）
+   * 已集成 Redis 缓存层，TTL 5 分钟
    */
   async searchCandidates(query: SearchCandidateDto): Promise<SearchResults> {
+    // 生成缓存键
+    const cacheKey = this.cacheService.generateKey(
+      this.CACHE_PREFIX,
+      query,
+    );
+
+    // 使用缓存或执行查询
+    return this.cacheService.getOrSet<SearchResults>(
+      cacheKey,
+      async () => {
+        return this.executeSearch(query);
+      },
+      { ttl: this.CACHE_TTL },
+    );
+  }
+
+  /**
+   * 执行实际搜索查询（缓存未命中时调用）
+   */
+  private async executeSearch(query: SearchCandidateDto): Promise<SearchResults> {
     const page = query.page || 1;
     const limit = Math.min(query.limit || 20, 100);
     const offset = (page - 1) * limit;
@@ -175,18 +201,58 @@ export class CandidateService {
 
   /**
    * 创建候选人
+   * 创建后自动失效相关搜索缓存
    */
   async create(candidateData: Partial<Candidate>): Promise<Candidate> {
     const candidate = this.candidateRepo.create(candidateData);
-    return this.candidateRepo.save(candidate);
+    const result = await this.candidateRepo.save(candidate);
+    
+    // 失效搜索缓存
+    await this.invalidateSearchCache();
+    
+    return result;
   }
 
   /**
    * 更新候选人
+   * 更新后自动失效相关搜索缓存
    */
   async update(id: number, data: Partial<Candidate>): Promise<Candidate> {
     await this.candidateRepo.update(id, data);
-    return this.findOne(id);
+    const result = await this.findOne(id);
+    
+    // 失效搜索缓存
+    await this.invalidateSearchCache();
+    
+    return result;
+  }
+
+  /**
+   * 删除候选人
+   * 删除后自动失效相关搜索缓存
+   */
+  async delete(id: number): Promise<void> {
+    await this.candidateRepo.delete(id);
+    
+    // 失效搜索缓存
+    await this.invalidateSearchCache();
+  }
+
+  /**
+   * 失效搜索缓存
+   * 当候选人数据发生变化时调用
+   */
+  async invalidateSearchCache(): Promise<void> {
+    const pattern = `huntlink:cache:${this.CACHE_PREFIX}:*`;
+    await this.cacheService.deleteByPattern(pattern);
+    console.log('[CandidateService] Search cache invalidated');
+  }
+
+  /**
+   * 获取缓存命中率统计
+   */
+  getCacheStats() {
+    return this.cacheService.getStats();
   }
 
   /**

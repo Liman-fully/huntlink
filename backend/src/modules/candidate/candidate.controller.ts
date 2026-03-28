@@ -52,6 +52,26 @@ export class CandidateController {
     };
   }
 
+  @Get('cache-stats')
+  @ApiOperation({ summary: '缓存统计（命中率监控）' })
+  async getCacheStats() {
+    const stats = this.candidateService.getCacheStats();
+    return {
+      success: true,
+      data: stats,
+    };
+  }
+
+  @Post('cache/invalidate')
+  @ApiOperation({ summary: '手动失效缓存（管理功能）' })
+  async invalidateCache() {
+    await this.candidateService.invalidateSearchCache();
+    return {
+      success: true,
+      message: '缓存已失效',
+    };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '获取候选人详情' })
   async getCandidate(@Param('id') id: number) {
