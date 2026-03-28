@@ -1,0 +1,22 @@
+{
+  "name": "huntlink",
+  "version": "1.0.0",
+  "description": "猎脉招聘社交平台",
+  "private": true,
+  "scripts": {
+    "precheck": "bash scripts/pre-push-check.sh",
+    "precheck:win": "powershell -ExecutionPolicy Bypass -File scripts/pre-push-check.ps1",
+    "backend:dev": "cd backend && npm run start:dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm run start:prod",
+    "frontend:dev": "cd frontend-web && npm run dev",
+    "frontend:build": "cd frontend-web && npm run build"
+  },
+  "keywords": [
+    "recruitment",
+    "social",
+    "headhunter"
+  ],
+  "author": "HuntLink Team",
+  "license": "MIT"
+}

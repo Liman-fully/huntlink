@@ -1,0 +1,15 @@
+#!/bin/bash
+# 猎脉项目 - Git Pre-push Hook
+# 自动执行构建检查
+
+echo "🏗️ 执行推送前构建检查..."
+
+cd backend
+
+# 构建检查
+if ! npm run build; then
+  echo "❌ 构建失败！请修复后再推送。"
+  exit 1
+fi
+
+echo "✅ 构建检查通过，可以推送。"

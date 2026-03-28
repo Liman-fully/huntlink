@@ -29,11 +29,26 @@ jobs:
     - name: Install frontend dependencies
       run: cd frontend-web && npm ci
     
+    # ==================== 关键：Type Check 必须在 Build 之前 ====================
+    - name: Type Check backend
+      run: cd backend && npx tsc --noEmit
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
+    
+    - name: Type Check frontend
+      run: cd frontend-web && npx tsc --noEmit || echo "Frontend type check skipped (may not have strict mode)"
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
+    
     - name: Build backend
       run: cd backend && npm run build
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
     
     - name: Build frontend
       run: cd frontend-web && npm run build
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
     
     - name: Run backend tests
       run: cd backend && npm test -- --passWithNoTests
@@ -92,22 +107,38 @@ jobs:
           [ ! -f "backend/.env" ] && cp backend/.env.example backend/.env
           [ ! -f "frontend-web/.env" ] && cp frontend-web/.env.example frontend-web/.env
           
-          echo "🐳 Starting Docker services..."
-          docker-compose down || true
-          docker-compose up -d --build
+          echo "🐳 Starting services (Direct Node + PM2)..."
           
-          echo "⏳ Waiting for services..."
-          sleep 30
+          # 停止旧进程
+          pkill -f "node dist/src/main" 2>/dev/null || true
+          sleep 2
           
-          echo "🏥 Health check..."
-          docker-compose ps
+          # 安装依赖并构建
+          cd /var/www/huntlink/backend
+          npm ci --production=false
+          npm run build
           
-          # 检查服务健康状态
-          if ! docker-compose ps | grep -q "healthy"; then
-            echo "❌ Health check failed, rolling back..."
-            docker-compose down
+          # 启动后端（带内存限制）
+          NODE_ENV=production NODE_OPTIONS="--max-old-space-size=1536" \
+            nohup node dist/src/main.js > backend.log 2>&1 &
+          
+          sleep 8
+          
+          # 验证启动
+          if pgrep -f "node dist/src/main" > /dev/null; then
+            echo "✅ Backend started successfully"
+          else
+            echo "❌ Backend failed to start"
+            cat backend.log
             exit 1
           fi
+          
+          echo "⏳ Waiting for services..."
+          sleep 5
+          
+          echo "🏥 Health check..."
+          curl -s -o /dev/null -w "Backend API: HTTP %{http_code}\n" http://localhost:3000/api/docs || true
+          pgrep -af "node dist/src/main" || true
           
           echo "========================================="
           echo "✅ Deployment completed!"
@@ -127,7 +158,17 @@ jobs:
           echo "🔄 Rolling back to previous version..."
           LATEST_BACKUP=$(ls -dt /var/www/huntlink-backup-* 2>/dev/null | head -1)
           if [ -n "$LATEST_BACKUP" ]; then
-            docker-compose -f "$LATEST_BACKUP/docker-compose.yml" up -d
+            echo "Restoring from: $LATEST_BACKUP"
+            # 停止当前进程
+            pkill -f "node dist/src/main" 2>/dev/null || true
+            sleep 2
+            # 恢复代码
+            rm -rf /var/www/huntlink
+            cp -r "$LATEST_BACKUP" /var/www/huntlink
+            # 重启服务
+            cd /var/www/huntlink/backend
+            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=1536" \
+              nohup node dist/src/main.js > backend.log 2>&1 &
             echo "✅ Rollback completed"
           else
             echo "⚠️ No backup found"

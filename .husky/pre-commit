@@ -1,0 +1,15 @@
+#!/bin/bash
+# 猎脉项目 - Git Pre-commit Hook
+# 自动执行 TypeScript 类型检查
+
+echo "🔍 执行提交前检查..."
+
+cd backend
+
+# TypeScript 类型检查
+if ! npx tsc --noEmit; then
+  echo "❌ TypeScript 类型检查失败！请修复后再提交。"
+  exit 1
+fi
+
+echo "✅ TypeScript 检查通过"
