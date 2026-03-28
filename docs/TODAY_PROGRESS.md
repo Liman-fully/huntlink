@@ -16,7 +16,8 @@
 | 部署成功 | 2 | 1 | ✅ Redis 部署完成 |
 | Bug 修复 | 7 | 5/7 | 🟡 71% 完成 |
 | 测试通过率 | 100% | 100% (22/22) | ✅ |
-| 开发任务 | 5 | 4/5 | 🟡 80% 完成 |
+| 开发任务 | 5 | 5/5 | ✅ 100% 完成 |
+| 平台资产保护 | 1 | 1/1 | ✅ 100% 完成 |
 
 ---
 
@@ -166,6 +167,53 @@ npm install cos-nodejs-sdk-v5
 - [ ] 更新此文档（进展 + 配置）
 - [ ] 更新任务看板
 - [ ] 通知@协调者
+
+---
+
+---
+
+## 🛡️ 平台资产保护任务
+
+### TASK-001: 简历下载标准化流程 ✅
+
+**执行者**: 右护法（子代理）  
+**完成时间**: 00:45  
+**提交**: 3a58918
+
+**背景**: 当前简历下载文件名混乱，需要建立标准化流程，保护平台资产。
+
+**市场最优实践**:
+- 猎聘：`姓名_职位_手机号_日期.pdf`
+- BOSS 直聘：`姓名_期望职位_工作年限.pdf`
+- 智联招聘：`姓名_手机号_简历 ID.pdf`
+
+**推荐方案**:
+```
+格式：姓名_手机号_期望职位_下载日期.pdf
+示例：张三_138****8000_Java 开发工程师_20260329.pdf
+
+规则:
+1. 姓名：真实姓名（2-10 字）
+2. 手机号：11 位数字，中间 4 位用*隐藏
+3. 期望职位：用户填写的期望职位（10 字内）
+4. 下载日期：YYYYMMDD 格式
+5. 特殊字符清理
+```
+
+**交付物**:
+1. ✅ `backend/src/modules/download/download-record.entity.ts` - 下载记录实体
+2. ✅ `backend/src/modules/download/download-record.service.ts` - 下载记录服务
+3. ✅ `backend/src/modules/download/download.module.ts` - 下载模块
+4. ✅ `backend/src/modules/export/export.service.ts` - 更新（generateStandardFileName 方法）
+5. ✅ `backend/src/app.module.ts` - 导入 DownloadModule
+6. ✅ `scripts/test-download-standard.sh` - 测试脚本
+
+**功能特性**:
+- 自动生成标准化文件名
+- 手机号脱敏（中间 4 位用*隐藏）
+- 特殊字符清理
+- 下载记录追踪（审计日志）
+- 支持单文件和批量导出
 
 ---
 
