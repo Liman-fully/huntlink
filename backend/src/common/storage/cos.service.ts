@@ -17,7 +17,7 @@ export class CosService {
 
   constructor(private configService: ConfigService) {
     this.bucket = this.configService.get<string>('COS_BUCKET') || 'huntlink-1306109984';
-    this.region = this.configService.get<string>('COS_REGION') || 'ap-shanghai';
+    this.region = this.configService.get<string>('COS_REGION') || 'ap-guangzhou';
 
     this.cos = new COS({
       SecretId: this.configService.get<string>('COS_SECRET_ID') || '',

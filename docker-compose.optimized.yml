@@ -50,12 +50,16 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-huntlink_user_password_2026}
       DB_DATABASE: huntlink
       JWT_SECRET: ${JWT_SECRET:-huntlink-jwt-secret-key-2026-change-in-production}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       PORT: 3000
       TZ: Asia/Shanghai
     ports:
       - "3000:3000"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - huntlink-network
@@ -118,5 +122,39 @@ networks:
   huntlink-network:
     driver: bridge
 
+  redis:
+    image: redis:7-alpine
+    container_name: huntlink-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - huntlink-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+networks:
+  huntlink-network:
+    driver: bridge
+
 volumes:
   postgres-data:
+  redis-data:
