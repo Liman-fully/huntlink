@@ -1,230 +1,220 @@
-# 猎脉 HuntLink - 招聘社交平台
+# 📚 猎脉组织文档导航中心
 
-[![CI/CD](https://github.com/YOUR_USERNAME/huntlink/workflows/CI%2FCD/badge.svg)](https://github.com/YOUR_USERNAME/huntlink/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-## 项目简介
-
-猎脉(HuntLink)是一个面向招聘者（企业HR、猎头）的高效率招聘社交平台，支持三端同步（Web、移动端、小程序）。
-
-### 核心功能
-- 🎯 **人才广场** - 公域简历库，发现优秀人才
-- 🔍 **高级搜索** - 20+筛选维度，布尔逻辑支持
-- 📁 **简历库** - 邮箱自动导入、批量上传、AI解析
-- 💬 **消息中心** - 即时沟通，高效协作
-- 💎 **积分体系** - 简历更新、下载、高级搜索
-
-### 技术栈
-- **后端**: NestJS + TypeScript + TypeORM + MySQL
-- **前端**: React 18 + TDesign + Vite
-- **移动端**: uni-app (Vue3) + Pinia + TDesign
-- **AI**: 阿里 SmartResume 简历解析引擎
-- **部署**: Docker + Docker Compose + 腾讯云
+> **版本**: V2.0  
+> **最后更新**: 2026-03-28  
+> **使用说明**: **这是你唯一需要记住的文档位置**
 
 ---
 
-## 多电脑协作开发指南
+## 👋 你是？
 
-### 1. 环境准备
+### 我是新人（第一次加入）
 
-每台电脑需要安装：
-- Node.js 20+
-- MySQL 8.0+
-- Docker & Docker Compose
-- Git
+**点击这里** → [`docs/NEWCOMER_GUIDE.md`](docs/NEWCOMER_GUIDE.md)
 
-### 2. 克隆项目
+**你将学到**：
+- 你的身份和权利
+- 5 步加入流程
+- 如何领取任务
+- 如何部署代码
 
-```bash
-git clone https://github.com/YOUR_USERNAME/huntlink.git
-cd huntlink
-```
-
-### 3. 安装依赖
-
-```bash
-# 后端
-cd backend && npm install
-
-# 前端
-cd ../frontend-web && npm install
-```
-
-### 4. 配置环境变量
-
-```bash
-# 后端配置
-cp backend/.env.example backend/.env
-# 编辑 .env 填入数据库连接信息、JWT密钥等
-
-# 前端配置
-cp frontend-web/.env.example frontend-web/.env
-```
-
-### 5. 启动开发服务器
-
-```bash
-# 后端 (端口 3000)
-cd backend && npm run start:dev
-
-# 前端 (端口 5173)
-cd frontend-web && npm run dev
-```
+**预计时间**：30 分钟
 
 ---
 
-## 提交前检查清单 ⚠️
+### 我是左护法（协调者）
 
-**每台电脑在提交前必须完成**：
+**点击这里** → [`docs/LEFT_HANDOVER_MANUAL.md`](docs/LEFT_HANDOVER_MANUAL.md)
 
-### 1. 经验沉淀
-- [ ] 记录本次修改解决的问题
-- [ ] 记录关键代码变更点
-- [ ] 记录踩坑经历和解决方案
-- [ ] 更新 `.workbuddy/memory/YYYY-MM-DD.md`
+**你将学到**：
+- 左护法核心职责
+- 日常工作清单
+- 任务分配流程
+- 新人监控方法
 
-### 2. 代码质量
-```bash
-# 运行检查
-npm run lint && npm run test && npm run build
-```
+**预计时间**：30 分钟
 
-### 3. 提交规范
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-### 4. 问题总结
-- 记录本机特有问题
-- 标注是否影响其他电脑
-- 更新 README（如有必要）
+**补充阅读**：
+- [项目记忆库](docs/PROJECT_MEMORY.md) - 关键决策和踩坑记录
+- [技能知识库](docs/SKILLS_KNOWLEDGE_BASE.md) - 已安装技能列表
 
 ---
 
-## 版本迭代清理
+### 我是都统/右护法（建设者）
 
-每个版本发布前，运行清理脚本：
+**点击这里** → [`docs/BUILDER_GUIDE.md`](docs/BUILDER_GUIDE.md)（建设中）
 
-### Windows
-```powershell
-.\scripts\cleanup.ps1
-```
+**你将学到**：
+- 建设者核心职责
+- 5 分钟闭环流程
+- 部署能力培训
+- 代码规范
 
-### Linux/macOS
-```bash
-chmod +x scripts/cleanup.sh
-./scripts/cleanup.sh
-```
+**预计时间**：30 分钟
 
-清理内容包括：
-- node_modules 重新安装
-- dist/build 目录清理
-- 测试缓存清理
-- 日志文件清理
+**补充阅读**：
+- [5 分钟闭环](docs/5MIN_CLOSED_LOOP.md) - 核心工作流程
+- [部署培训](docs/DEPLOYMENT_TRAINING.md) - 部署能力全员化
 
 ---
 
-## 测试
+### 我是司命大人（领导者）
 
-### 后端测试
-```bash
-cd backend
-npm run test        # 单元测试
-npm run test:e2e    # E2E测试
-npm run test:cov    # 覆盖率报告
-```
+**点击这里** → [`docs/LEADER_GUIDE.md`](docs/LEADER_GUIDE.md)（建设中）
 
-### 前端测试
-```bash
-cd frontend-web
-npm run test        # 单元测试
-npm run test:e2e    # E2E测试 (Cypress)
-```
+**你将学到**：
+- 领导者核心职责
+- 决策流程
+- 组织健康度监控
+- 紧急情況处理
 
----
+**预计时间**：15 分钟
 
-## CI/CD
-
-项目使用 GitHub Actions 自动化：
-
-- **Push to main**: 自动部署到生产服务器
-- **Pull Request**: 自动运行测试和构建
-- **Daily**: 自动清理旧构建产物
+**补充阅读**：
+- [组织管理系统](ORGANIZATION.md) - 完整组织体系
+- [今日进展](docs/TODAY_PROGRESS_*.md) - 每日进展报告
 
 ---
 
-## 项目结构
+## 🎯 核心文档（按用途）
+
+### 加入组织
+
+| 文档 | 用途 | 时间 |
+|------|------|------|
+| [新人引导](docs/NEWCOMER_GUIDE.md) | 新人加入流程 | 30 分钟 |
+| [组织总览](ORGANIZATION.md) | 了解组织架构 | 15 分钟 |
+
+### 日常工作
+
+| 文档 | 用途 | 时间 |
+|------|------|------|
+| [任务看板](.task-board.md) | 查看和领取任务 | 2 分钟 |
+| [5 分钟闭环](docs/5MIN_CLOSED_LOOP.md) | 快速开发流程 | 5 分钟 |
+| [技能知识库](docs/SKILLS_KNOWLEDGE_BASE.md) | 查找技能 | 2 分钟 |
+
+### 角色交接
+
+| 文档 | 用途 | 时间 |
+|------|------|------|
+| [左护法交接](docs/LEFT_HANDOVER_MANUAL.md) | 左护法角色交接 | 30 分钟 |
+| [项目记忆库](docs/PROJECT_MEMORY.md) | 关键决策和踩坑 | 30 分钟 |
+| [交接手册模板](docs/ROLE_HANDOVER_TEMPLATE.md) | 创建新角色交接手册 | 10 分钟 |
+
+### 技术参考
+
+| 文档 | 用途 | 时间 |
+|------|------|------|
+| [部署培训](docs/DEPLOYMENT_TRAINING.md) | 学习部署 | 30 分钟 |
+| [UI/UX 设计](docs/design/UI_UX_DESIGN_V1.md) | 设计规范 | 30 分钟 |
+| [Docker 优化](DOCKER_OPTIMIZATION_PLAN.md) | Docker 配置 | 30 分钟 |
+
+---
+
+## 🔍 找不到文档？
+
+### 使用搜索
+
+**GitHub 搜索**：
+```
+在 GitHub 仓库中搜索关键词
+示例：部署、技能、交接
+```
+
+**本地搜索**：
+```bash
+# 搜索文档内容
+grep -r "关键词" docs/
+```
+
+### 询问其他成员
+
+**在群里问**：
+```
+@全体 请问 [问题] 的文档在哪里？
+```
+
+**推荐询问对象**：
+- 文档相关问题 → @左护法
+- 技术问题 → @都统/@右护法
+- 产品问题 → @司命大人
+
+---
+
+## 📊 文档地图
 
 ```
-huntlink/
-├── backend/                # NestJS 后端
-│   ├── src/
-│   │   ├── modules/       # 功能模块
-│   │   ├── common/        # 公共模块
-│   │   └── migrations/    # 数据库迁移
-│   └── test/              # 测试文件
+README.md (你在这里)
 │
-├── frontend-web/          # React Web 前端
-│   ├── src/
-│   │   ├── pages/         # 页面组件
-│   │   ├── components/    # 公共组件
-│   │   └── layouts/       # 布局组件
-│   └── test/              # 测试文件
+├── 新人加入
+│   └── docs/NEWCOMER_GUIDE.md
 │
-├── .github/workflows/     # CI/CD 配置
-├── scripts/               # 工具脚本
-└── .workbuddy/            # 经验沉淀
-    └── memory/            # 工作记忆
+├── 角色交接
+│   ├── docs/LEFT_HANDOVER_MANUAL.md (左护法)
+│   ├── docs/BUILDER_GUIDE.md (建设者 - 建设中)
+│   ├── docs/LEADER_GUIDE.md (领导者 - 建设中)
+│   └── docs/ROLE_HANDOVER_TEMPLATE.md (模板)
+│
+├── 日常工作
+│   ├── .task-board.md (任务看板)
+│   ├── docs/5MIN_CLOSED_LOOP.md (5 分钟闭环)
+│   └── docs/SKILLS_KNOWLEDGE_BASE.md (技能库)
+│
+├── 组织体系
+│   ├── ORGANIZATION.md (组织总览)
+│   └── docs/PROJECT_MEMORY.md (项目记忆)
+│
+├── 技术参考
+│   ├── docs/DEPLOYMENT_TRAINING.md (部署培训)
+│   ├── docs/design/ (设计文档)
+│   └── DOCKER_OPTIMIZATION_PLAN.md (Docker 优化)
+│
+└── 进展报告
+    └── docs/TODAY_PROGRESS_*.md (每日进展)
 ```
 
 ---
 
-## 多电脑协作最佳实践
+## ⚠️ 重要提醒
 
-### 1. 每日开始前
-```bash
-git pull origin main
-npm install  # 确保依赖最新
-```
+### 文档版本
 
-### 2. 开发过程中
-- 频繁提交小改动
-- 写清楚 commit message
-- 及时推送代码
+- ✅ 所有文档都有版本号（V1.0, V2.0）
+- ✅ 查看文档时注意版本号
+- ✅ 发现旧版本请通知左护法更新
 
-### 3. 每日结束时
-```bash
-# 运行检查
-npm run lint && npm run test
+### 文档更新
 
-# 提交经验
-# 编辑 .workbuddy/memory/YYYY-MM-DD.md
+- ✅ 文档需要实时更新
+- ✅ 工作完成后立即更新相关文档
+- ✅ 发现文档错误立即修正
 
-# 推送代码
-git add . && git commit && git push
-```
+### 文档精简
 
-### 4. 遇到冲突时
-1. 先 `git pull` 合并远程变更
-2. 解决冲突
-3. 本地测试
-4. 再推送
+- ✅ 文档在精不在多
+- ✅ 没用的文档会删除
+- ✅ 重复的文档会合并
 
 ---
 
-## 文档
+## 💬 反馈
 
-- [产品规划 v3.0](../HuntLink-产品规划_v3.0.md)
-- [简历卡片视觉设计规范](../HuntLink-简历卡片视觉设计规范.md)
-- [多Agent协作体系说明](docs/MULTI_AGENT_COLLABORATION.md) ⭐
-- [提交前检查清单](.pre-commit-checklist.md)
+**发现文档问题？**
+
+1. 在 GitHub 提 Issue
+2. 群里 @左护法
+3. 直接 PR 修改
+
+**文档太多找不到？**
+
+- ✅ 记住这个页面就够了（README.md）
+- ✅ 按需点击链接
+- ✅ 找不到就问
 
 ---
 
-## License
-
-MIT © 2026 HuntLink Team
+**文档位置**: `README.md`  
+**版本**: V2.0（导航中心版）  
+**最后更新**: 2026-03-28  
+**维护者**: 左护法（天策府主官）  
+**反馈**: @左护法
