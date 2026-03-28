@@ -1,24 +1,22 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: huntlink-mysql
+  postgres:
+    image: postgres:16
+    container_name: huntlink-postgres
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-huntlink_root_password_2026}
-      MYSQL_DATABASE: huntlink
-      MYSQL_USER: huntlink
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-huntlink_user_password_2026}
+      POSTGRES_DB: huntlink
+      POSTGRES_USER: huntlink
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-huntlink_user_password_2026}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./backend/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - huntlink-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U huntlink"]
       timeout: 20s
       retries: 10
 
@@ -30,17 +28,17 @@ services:
     restart: always
     environment:
       NODE_ENV: production
-      DB_HOST: mysql
-      DB_PORT: 3306
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_USERNAME: huntlink
-      DB_PASSWORD: ${MYSQL_PASSWORD:-huntlink_user_password_2026}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-huntlink_user_password_2026}
       DB_DATABASE: huntlink
       JWT_SECRET: ${JWT_SECRET:-huntlink-jwt-secret-key-2026-change-in-production}
       PORT: 3000
     ports:
       - "3000:3000"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     networks:
       - huntlink-network
@@ -71,4 +69,4 @@ networks:
     driver: bridge
 
 volumes:
-  mysql-data:
+  postgres-data:

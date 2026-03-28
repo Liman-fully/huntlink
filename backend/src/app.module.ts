@@ -40,9 +40,9 @@ import { ExportProcessor } from './export.processor';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
-        type: 'mysql',
+        type: 'postgres',
         host: process.env.DB_HOST || 'localhost',
-        port: Number(process.env.DB_PORT) || 3306,
+        port: Number(process.env.DB_PORT) || 5432,
         username: process.env.DB_USERNAME || 'root',
         password: process.env.DB_PASSWORD || '',
         database: process.env.DB_DATABASE || 'huntlink',

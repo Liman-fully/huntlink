@@ -1,18 +1,18 @@
 import { createConnection } from 'typeorm';
 
 async function runMigration() {
-  console.log('🚀 开始执行数据库迁移...');
+  console.log('Starting database migration...');
 
   const connection = await createConnection({
-    type: 'mysql',
+    type: 'postgres',
     host: process.env.DB_HOST || 'localhost',
-    port: 3306,
-    username: process.env.DB_USERNAME || 'root',
+    port: 5432,
+    username: process.env.DB_USERNAME || 'huntlink',
     password: process.env.DB_PASSWORD || 'HuntLink2026!dev',
     database: 'huntlink',
   });
 
-  console.log('✅ 数据库连接成功');
+  console.log('Database connection successful');
 
   // 创建职位分类表
   await connection.query(`
@@ -26,63 +26,45 @@ async function runMigration() {
       positions TEXT,
       is_active BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_level (level),
       INDEX idx_parent (parent_code),
       INDEX idx_code (code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    )
   `);
-  console.log('✅ 职位分类表创建成功');
+  console.log('job_categories table created');
 
   // 扩展 talents 表
-  try {
-    await connection.query(`ALTER TABLE talents ADD COLUMN category_code VARCHAR(10) COMMENT '职位分类编码'`);
-    console.log('✅ 添加 category_code 字段');
-  } catch (e) {
-    console.log('⚠️  category_code 字段已存在');
-  }
+  const talentColumns = [
+    { col: 'category_code', type: 'VARCHAR(10)', comment: '职位分类编码' },
+    { col: 'industry_code', type: 'VARCHAR(10)', comment: '行业编码' },
+    { col: 'job_level', type: 'VARCHAR(10)', comment: '职级（P5/P6/P7）' },
+    { col: 'position_name', type: 'VARCHAR(100)', comment: '标准化职位名称' },
+  ];
 
-  try {
-    await connection.query(`ALTER TABLE talents ADD COLUMN industry_code VARCHAR(10) COMMENT '行业编码'`);
-    console.log('✅ 添加 industry_code 字段');
-  } catch (e) {
-    console.log('⚠️  industry_code 字段已存在');
-  }
-
-  try {
-    await connection.query(`ALTER TABLE talents ADD COLUMN job_level VARCHAR(10) COMMENT '职级（P5/P6/P7）'`);
-    console.log('✅ 添加 job_level 字段');
-  } catch (e) {
-    console.log('⚠️  job_level 字段已存在');
-  }
-
-  try {
-    await connection.query(`ALTER TABLE talents ADD COLUMN position_name VARCHAR(100) COMMENT '标准化职位名称'`);
-    console.log('✅ 添加 position_name 字段');
-  } catch (e) {
-    console.log('⚠️  position_name 字段已存在');
+  for (const { col, type } of talentColumns) {
+    try {
+      await connection.query(`ALTER TABLE talents ADD COLUMN ${col} ${type}`);
+      console.log(`Added ${col} column`);
+    } catch (e) {
+      console.log(`${col} column already exists`);
+    }
   }
 
   // 创建索引
-  try {
-    await connection.query(`CREATE INDEX IF NOT EXISTS idx_category ON talents (category_code)`);
-    console.log('✅ 创建 idx_category 索引');
-  } catch (e) {
-    console.log('⚠️  idx_category 索引已存在');
-  }
+  const indexes = [
+    { name: 'idx_category', col: 'category_code' },
+    { name: 'idx_industry', col: 'industry_code' },
+    { name: 'idx_job_level', col: 'job_level' },
+  ];
 
-  try {
-    await connection.query(`CREATE INDEX IF NOT EXISTS idx_industry ON talents (industry_code)`);
-    console.log('✅ 创建 idx_industry 索引');
-  } catch (e) {
-    console.log('⚠️  idx_industry 索引已存在');
-  }
-
-  try {
-    await connection.query(`CREATE INDEX IF NOT EXISTS idx_job_level ON talents (job_level)`);
-    console.log('✅ 创建 idx_job_level 索引');
-  } catch (e) {
-    console.log('⚠️  idx_job_level 索引已存在');
+  for (const { name, col } of indexes) {
+    try {
+      await connection.query(`CREATE INDEX IF NOT EXISTS ${name} ON talents (${col})`);
+      console.log(`Created ${name} index`);
+    } catch (e) {
+      console.log(`${name} index already exists`);
+    }
   }
 
   // 创建分类日志表
@@ -100,19 +82,16 @@ async function runMigration() {
       is_manual_override BOOLEAN DEFAULT FALSE,
       manual_result_category_code VARCHAR(10),
       error_type VARCHAR(50),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      INDEX idx_confidence (confidence),
-      INDEX idx_manual_override (is_manual_override),
-      INDEX idx_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
   `);
-  console.log('✅ 分类日志表创建成功');
+  console.log('classification_logs table created');
 
-  console.log('✅ 数据库迁移完成');
+  console.log('Database migration complete');
   await connection.close();
 }
 
 runMigration().catch(err => {
-  console.error('❌ 迁移失败:', err);
+  console.error('Migration failed:', err);
   process.exit(1);
 });

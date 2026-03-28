@@ -1,4 +1,4 @@
--- 职位分类表
+-- 职位分类表 (PostgreSQL 版本)
 CREATE TABLE IF NOT EXISTS job_categories (
   id VARCHAR(36) PRIMARY KEY,
   code VARCHAR(10) NOT NULL UNIQUE,
@@ -9,22 +9,36 @@ CREATE TABLE IF NOT EXISTS job_categories (
   positions TEXT,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_level (level),
-  INDEX idx_parent (parent_code),
-  INDEX idx_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='职位分类表';
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_job_categories_level ON job_categories(level);
+CREATE INDEX IF NOT EXISTS idx_job_categories_parent ON job_categories(parent_code);
+CREATE INDEX IF NOT EXISTS idx_job_categories_code ON job_categories(code);
+
+COMMENT ON TABLE job_categories IS '职位分类表';
 
 -- 人才职位扩展字段
-ALTER TABLE talents ADD COLUMN IF NOT EXISTS category_code VARCHAR(10) COMMENT '职位分类编码';
-ALTER TABLE talents ADD COLUMN IF NOT EXISTS industry_code VARCHAR(10) COMMENT '行业编码';
-ALTER TABLE talents ADD COLUMN IF NOT EXISTS job_level VARCHAR(10) COMMENT '职级（P5/P6/P7）';
-ALTER TABLE talents ADD COLUMN IF NOT EXISTS position_name VARCHAR(100) COMMENT '标准化职位名称';
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'talents' AND column_name = 'category_code') THEN
+    ALTER TABLE talents ADD COLUMN category_code VARCHAR(10);
+  END IF;
+  IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'talents' AND column_name = 'industry_code') THEN
+    ALTER TABLE talents ADD COLUMN industry_code VARCHAR(10);
+  END IF;
+  IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'talents' AND column_name = 'job_level') THEN
+    ALTER TABLE talents ADD COLUMN job_level VARCHAR(10);
+  END IF;
+  IF NOT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'talents' AND column_name = 'position_name') THEN
+    ALTER TABLE talents ADD COLUMN position_name VARCHAR(100);
+  END IF;
+END $$;
 
 -- 索引
-ALTER TABLE talents ADD INDEX IF NOT EXISTS idx_category (category_code);
-ALTER TABLE talents ADD INDEX IF NOT EXISTS idx_industry (industry_code);
-ALTER TABLE talents ADD INDEX IF NOT EXISTS idx_job_level (job_level);
+CREATE INDEX IF NOT EXISTS idx_talents_category ON talents(category_code);
+CREATE INDEX IF NOT EXISTS idx_talents_industry ON talents(industry_code);
+CREATE INDEX IF NOT EXISTS idx_talents_job_level ON talents(job_level);
 
 -- 分类日志表（用于持续优化）
 CREATE TABLE IF NOT EXISTS classification_logs (
@@ -40,8 +54,11 @@ CREATE TABLE IF NOT EXISTS classification_logs (
   is_manual_override BOOLEAN DEFAULT FALSE,
   manual_result_category_code VARCHAR(10),
   error_type VARCHAR(50),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_confidence (confidence),
-  INDEX idx_manual_override (is_manual_override),
-  INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分类日志表';
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_classification_logs_confidence ON classification_logs(confidence);
+CREATE INDEX IF NOT EXISTS idx_classification_logs_manual_override ON classification_logs(is_manual_override);
+CREATE INDEX IF NOT EXISTS idx_classification_logs_created_at ON classification_logs(created_at);
+
+COMMENT ON TABLE classification_logs IS '分类日志表';

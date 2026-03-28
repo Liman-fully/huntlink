@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 搜索性能优化 - 应用数据库索引脚本
+# 搜索性能优化 - 应用数据库索引脚本 (PostgreSQL)
 # 使用方法：./scripts/apply-indexes.sh
 
 set -e
@@ -11,28 +11,26 @@ if [ -f .env ]; then
 fi
 
 # 默认值
-DB_HOST=${DATABASE_HOST:-localhost}
-DB_PORT=${DATABASE_PORT:-3306}
-DB_USER=${DATABASE_USER:-root}
-DB_PASS=${DATABASE_PASSWORD:-}
-DB_NAME=${DATABASE_NAME:-huntlink}
+DB_HOST=${DB_HOST:-localhost}
+DB_PORT=${DB_PORT:-5432}
+DB_USER=${DB_USERNAME:-huntlink}
+DB_NAME=${DB_DATABASE:-huntlink}
 
-echo "🚀 开始应用搜索性能优化索引..."
-echo "数据库：${DB_HOST}:${DB_PORT}/${DB_NAME}"
+echo "Applying search performance indexes..."
+echo "Database: ${DB_HOST}:${DB_PORT}/${DB_NAME}"
 echo ""
 
 # 执行 SQL 迁移
-mysql -h "${DB_HOST}" \
-      -P "${DB_PORT}" \
-      -u "${DB_USER}" \
-      -p"${DB_PASS}" \
-      "${DB_NAME}" \
-      < src/migrations/add-search-indexes.sql
+PGPASSWORD=${DB_PASSWORD:-} psql -h "${DB_HOST}" \
+      -p "${DB_PORT}" \
+      -U "${DB_USER}" \
+      -d "${DB_NAME}" \
+      -f src/migrations/add-search-indexes.sql
 
 echo ""
-echo "✅ 索引应用完成!"
+echo "Index application complete!"
 echo ""
-echo "下一步:"
-echo "1. 编译 TypeScript: npm run build"
-echo "2. 运行性能测试：npx ts-node src/performance/search-performance.test.ts"
-echo "3. 重启服务：pm2 restart huntlink-backend 或 npm run start:prod"
+echo "Next steps:"
+echo "1. Build TypeScript: npm run build"
+echo "2. Run performance test: npx ts-node src/performance/search-performance.test.ts"
+echo "3. Restart service: pm2 restart huntlink-backend or npm run start:prod"
