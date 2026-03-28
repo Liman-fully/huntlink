@@ -23,6 +23,7 @@ import { MembershipModule } from './modules/membership/membership.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { CandidateModule } from './modules/candidate/candidate.module';
 import { ExportModule } from './modules/export/export.module';
+import { RecommendationModule } from './modules/recommendation/recommendation.module';
 import { IndexMaintenanceService } from './common/maintenance/index-maintenance.service';
 import { QueryLoggingMiddleware } from './common/middleware/query-logging.middleware';
 import { TalentEventListener } from './modules/talent/talent-event-listener';
@@ -71,6 +72,7 @@ import { ExportProcessor } from './export.processor';
     InvitationModule,
     CandidateModule,
     ExportModule,
+    RecommendationModule,
   ],
   providers: [
     IndexMaintenanceService,
