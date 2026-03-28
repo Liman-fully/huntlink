@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from './common/redis/redis.module';
 import { CacheModule } from './common/cache/cache.module';
+import { CosModule } from './common/storage/cos.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { TalentModule } from './modules/talent/talent.module';
@@ -35,6 +36,7 @@ import { ExportProcessor } from './export.processor';
     ScheduleModule.forRoot(),
     RedisModule,
     CacheModule,
+    CosModule,
     ConfigModule.forRoot({ isGlobal: true }),
     BullModule.forRoot({
       redis: {
