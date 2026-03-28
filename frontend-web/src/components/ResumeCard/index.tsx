@@ -70,8 +70,8 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
     { content: '举报', value: 'report' },
   ];
 
-  const handleMoreAction = (value: string) => {
-    onAction?.({ type: value, id: data.id });
+  const handleMoreAction = (dropdownItem: any) => {
+    onAction?.({ type: dropdownItem.value, id: data.id });
   };
 
   return (
@@ -86,7 +86,7 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
           <Checkbox
             checked={selected}
             onChange={handleSelect}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(context: { e: React.MouseEvent }) => context.e.stopPropagation()}
             className="select-checkbox"
           />
         )}

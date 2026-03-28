@@ -53,7 +53,7 @@ const SearchHero: React.FC<SearchHeroProps> = ({
           prefixIcon={<SearchIcon />}
           value={keyword}
           onChange={(value) => setKeyword(value as string)}
-          onKeyPress={handleKeyPress}
+          onKeypress={handleKeyPress}
           className="search-input"
           clearable
         />
