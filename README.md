@@ -1,220 +1,286 @@
-# 📚 猎脉组织文档导航中心
+# 🚀 猎脉组织 - 一键激活
 
-> **版本**: V2.0  
+> **版本**: V3.0（终极精简版）  
 > **最后更新**: 2026-03-28  
-> **使用说明**: **这是你唯一需要记住的文档位置**
+> **核心原则**: **1 个文档搞定所有**
 
 ---
 
-## 👋 你是？
+## 👋 快速激活
 
-### 我是新人（第一次加入）
+**司命大人说**：`"你来做 [角色]"`
 
-**点击这里** → [`docs/NEWCOMER_GUIDE.md`](docs/NEWCOMER_GUIDE.md)
+**你自动执行**：
 
-**你将学到**：
-- 你的身份和权利
-- 5 步加入流程
-- 如何领取任务
-- 如何部署代码
+### 1️⃣ 选择角色（30 秒）
 
-**预计时间**：30 分钟
-
----
-
-### 我是左护法（协调者）
-
-**点击这里** → [`docs/LEFT_HANDOVER_MANUAL.md`](docs/LEFT_HANDOVER_MANUAL.md)
-
-**你将学到**：
-- 左护法核心职责
-- 日常工作清单
-- 任务分配流程
-- 新人监控方法
-
-**预计时间**：30 分钟
-
-**补充阅读**：
-- [项目记忆库](docs/PROJECT_MEMORY.md) - 关键决策和踩坑记录
-- [技能知识库](docs/SKILLS_KNOWLEDGE_BASE.md) - 已安装技能列表
+| 角色 | 职责 | 点击激活 |
+|------|------|---------|
+| **协调者** | 任务分配 + 进度监控 | [激活](#协调者) |
+| **建设者** | 技术实现 + 产品开发 | [激活](#建设者) |
+| **审查者** | 质量审查 + 性能优化 | [激活](#审查者) |
 
 ---
 
-### 我是都统/右护法（建设者）
+## 🤖 角色详情
 
-**点击这里** → [`docs/BUILDER_GUIDE.md`](docs/BUILDER_GUIDE.md)（建设中）
+### 协调者
 
-**你将学到**：
-- 建设者核心职责
-- 5 分钟闭环流程
-- 部署能力培训
-- 代码规范
+**核心职责**：
+1. 任务分配
+2. 进度监控
+3. 质量验收
 
-**预计时间**：30 分钟
-
-**补充阅读**：
-- [5 分钟闭环](docs/5MIN_CLOSED_LOOP.md) - 核心工作流程
-- [部署培训](docs/DEPLOYMENT_TRAINING.md) - 部署能力全员化
-
----
-
-### 我是司命大人（领导者）
-
-**点击这里** → [`docs/LEADER_GUIDE.md`](docs/LEADER_GUIDE.md)（建设中）
-
-**你将学到**：
-- 领导者核心职责
-- 决策流程
-- 组织健康度监控
-- 紧急情況处理
-
-**预计时间**：15 分钟
-
-**补充阅读**：
-- [组织管理系统](ORGANIZATION.md) - 完整组织体系
-- [今日进展](docs/TODAY_PROGRESS_*.md) - 每日进展报告
-
----
-
-## 🎯 核心文档（按用途）
-
-### 加入组织
-
-| 文档 | 用途 | 时间 |
-|------|------|------|
-| [新人引导](docs/NEWCOMER_GUIDE.md) | 新人加入流程 | 30 分钟 |
-| [组织总览](ORGANIZATION.md) | 了解组织架构 | 15 分钟 |
-
-### 日常工作
-
-| 文档 | 用途 | 时间 |
-|------|------|------|
-| [任务看板](.task-board.md) | 查看和领取任务 | 2 分钟 |
-| [5 分钟闭环](docs/5MIN_CLOSED_LOOP.md) | 快速开发流程 | 5 分钟 |
-| [技能知识库](docs/SKILLS_KNOWLEDGE_BASE.md) | 查找技能 | 2 分钟 |
-
-### 角色交接
-
-| 文档 | 用途 | 时间 |
-|------|------|------|
-| [左护法交接](docs/LEFT_HANDOVER_MANUAL.md) | 左护法角色交接 | 30 分钟 |
-| [项目记忆库](docs/PROJECT_MEMORY.md) | 关键决策和踩坑 | 30 分钟 |
-| [交接手册模板](docs/ROLE_HANDOVER_TEMPLATE.md) | 创建新角色交接手册 | 10 分钟 |
-
-### 技术参考
-
-| 文档 | 用途 | 时间 |
-|------|------|------|
-| [部署培训](docs/DEPLOYMENT_TRAINING.md) | 学习部署 | 30 分钟 |
-| [UI/UX 设计](docs/design/UI_UX_DESIGN_V1.md) | 设计规范 | 30 分钟 |
-| [Docker 优化](DOCKER_OPTIMIZATION_PLAN.md) | Docker 配置 | 30 分钟 |
-
----
-
-## 🔍 找不到文档？
-
-### 使用搜索
-
-**GitHub 搜索**：
-```
-在 GitHub 仓库中搜索关键词
-示例：部署、技能、交接
-```
-
-**本地搜索**：
+**激活后自动执行**：
 ```bash
-# 搜索文档内容
-grep -r "关键词" docs/
+# 1. 继承经验
+cp docs/experiences/COORDINATOR/handover.md \
+   docs/experiences/COORDINATOR/inherited.md
+
+# 2. 开启记忆
+cat > docs/experiences/COORDINATOR/accumulated.md << EOF
+# 协调者经验
+
+**开始**: $(date)
+**今日目标**: 完成 10 个任务闭环
+EOF
+
+# 3. 查看任务
+cat .task-board.md
 ```
 
-### 询问其他成员
+**日常工作**：
+- 早上 9:00：分配任务 → 更新 `.task-board.md`
+- 中午 12:00：检查进度 → 更新 `.task-board.md`
+- 晚上 20:00：验收任务 → 记录经验
 
-**在群里问**：
-```
-@全体 请问 [问题] 的文档在哪里？
-```
-
-**推荐询问对象**：
-- 文档相关问题 → @左护法
-- 技术问题 → @都统/@右护法
-- 产品问题 → @司命大人
-
----
-
-## 📊 文档地图
-
-```
-README.md (你在这里)
-│
-├── 新人加入
-│   └── docs/NEWCOMER_GUIDE.md
-│
-├── 角色交接
-│   ├── docs/LEFT_HANDOVER_MANUAL.md (左护法)
-│   ├── docs/BUILDER_GUIDE.md (建设者 - 建设中)
-│   ├── docs/LEADER_GUIDE.md (领导者 - 建设中)
-│   └── docs/ROLE_HANDOVER_TEMPLATE.md (模板)
-│
-├── 日常工作
-│   ├── .task-board.md (任务看板)
-│   ├── docs/5MIN_CLOSED_LOOP.md (5 分钟闭环)
-│   └── docs/SKILLS_KNOWLEDGE_BASE.md (技能库)
-│
-├── 组织体系
-│   ├── ORGANIZATION.md (组织总览)
-│   └── docs/PROJECT_MEMORY.md (项目记忆)
-│
-├── 技术参考
-│   ├── docs/DEPLOYMENT_TRAINING.md (部署培训)
-│   ├── docs/design/ (设计文档)
-│   └── DOCKER_OPTIMIZATION_PLAN.md (Docker 优化)
-│
-└── 进展报告
-    └── docs/TODAY_PROGRESS_*.md (每日进展)
+**经验记录模板**：
+```markdown
+### [时间] [任务标题]
+**场景**: [什么情况]
+**做法**: [怎么做]
+**效果**: [结果]
 ```
 
 ---
 
-## ⚠️ 重要提醒
+### 建设者
 
-### 文档版本
+**核心职责**：
+1. 技术实现
+2. 产品开发
+3. 部署上线
 
-- ✅ 所有文档都有版本号（V1.0, V2.0）
-- ✅ 查看文档时注意版本号
-- ✅ 发现旧版本请通知左护法更新
+**激活后自动执行**：
+```bash
+# 1. 继承经验
+cp docs/experiences/BUILDER/handover.md \
+   docs/experiences/BUILDER/inherited.md
 
-### 文档更新
+# 2. 开启记忆
+cat > docs/experiences/BUILDER/accumulated.md << EOF
+# 建设者经验
 
-- ✅ 文档需要实时更新
-- ✅ 工作完成后立即更新相关文档
-- ✅ 发现文档错误立即修正
+**开始**: $(date)
+**今日目标**: 完成 5 个功能开发
+EOF
 
-### 文档精简
+# 3. 领取任务
+# 查看 .task-board.md，选择"待开始"任务
+```
 
-- ✅ 文档在精不在多
-- ✅ 没用的文档会删除
-- ✅ 重复的文档会合并
+**5 分钟闭环流程**：
+```
+0:00  收到任务
+0:30  技能检查（npx skills search）
+1:00  全速开发
+3:00  测试
+4:00  同步（更新任务看板）
+4:30  闭环（提交 + 通知）
+```
+
+**经验记录模板**：
+```markdown
+### [时间] [任务标题]
+**技术栈**: [用了什么]
+**难点**: [遇到什么困难]
+**解决**: [怎么解决]
+**复盘**: [下次如何更好]
+```
 
 ---
 
-## 💬 反馈
+### 审查者
 
-**发现文档问题？**
+**核心职责**：
+1. 代码审查
+2. 质量检查
+3. 性能优化
 
-1. 在 GitHub 提 Issue
-2. 群里 @左护法
-3. 直接 PR 修改
+**激活后自动执行**：
+```bash
+# 1. 继承经验
+cp docs/experiences/REVIEWER/handover.md \
+   docs/experiences/REVIEWER/inherited.md
 
-**文档太多找不到？**
+# 2. 开启记忆
+cat > docs/experiences/REVIEWER/accumulated.md << EOF
+# 审查者经验
 
-- ✅ 记住这个页面就够了（README.md）
-- ✅ 按需点击链接
-- ✅ 找不到就问
+**开始**: $(date)
+**今日目标**: 审查 10 个 PR
+EOF
+
+# 3. 查看待审查
+# 查看 .task-board.md，选择"待审查"任务
+```
+
+**审查清单**：
+- [ ] TypeScript 编译通过
+- [ ] ESLint 检查通过
+- [ ] 测试通过
+- [ ] 无安全漏洞
+- [ ] 代码规范
+
+**经验记录模板**：
+```markdown
+### [时间] [审查任务]
+**问题**: [发现什么问题]
+**建议**: [怎么改进]
+**结果**: [是否采纳]
+```
+
+---
+
+## 📋 核心工具
+
+### 工具 1: 任务看板
+
+**位置**: `.task-board.md`
+
+**用途**：
+- 查看任务
+- 领取任务
+- 更新状态
+
+**状态说明**：
+- `⏳` 待开始
+- `🟡` 进行中
+- `✅` 已完成
+
+---
+
+### 工具 2: 经验系统
+
+**位置**: `docs/experiences/[ROLE]/accumulated.md`
+
+**用途**：
+- 记录每日经验
+- 自动积累
+- 继任者继承
+
+**自动记录**：
+```bash
+# 任务完成后自动执行
+./scripts/log-experience.sh [ROLE] "[标题]" "[场景]" "[做法]" "[效果]"
+```
+
+---
+
+### 工具 3: 今日进展
+
+**位置**: `docs/TODAY_PROGRESS.md`
+
+**用途**：
+- 记录今日完成
+- 记录进行中
+- 记录问题和计划
+
+**自动更新**：
+```bash
+# 每晚 23:00 自动执行
+./scripts/update-today-progress.sh
+```
+
+---
+
+## 🎯 快速参考
+
+### 常用命令
+
+```bash
+# 激活角色
+./scripts/activate-role.sh [ROLE]
+
+# 记录经验
+./scripts/log-experience.sh [ROLE] "[标题]" "[场景]" "[做法]" "[效果]"
+
+# 任务复盘
+./scripts/task-retrospective.sh [TASK_ID] [ROLE]
+
+# 查看经验
+cat docs/experiences/[ROLE]/accumulated.md
+
+# 查看任务
+cat .task-board.md
+```
+
+### 常用链接
+
+| 文档 | 用途 | 链接 |
+|------|------|------|
+| 组织总览 | 了解架构 | [ORGANIZATION.md](ORGANIZATION.md) |
+| 5 分钟闭环 | 快速开发 | [docs/5MIN_CLOSED_LOOP.md](docs/5MIN_CLOSED_LOOP.md) |
+| 部署培训 | 学习部署 | [docs/DEPLOYMENT_TRAINING.md](docs/DEPLOYMENT_TRAINING.md) |
+| 技能库 | 查找技能 | [docs/SKILLS_KNOWLEDGE_BASE.md](docs/SKILLS_KNOWLEDGE_BASE.md) |
+
+---
+
+## 💬 常见问题
+
+### Q: 如何开始工作？
+
+**A**: 
+1. 司命大人说："你来做 [角色]"
+2. 你点击对应角色链接
+3. 自动激活，开始工作
+
+### Q: 如何记录经验？
+
+**A**: 
+1. 任务完成后
+2. 复制经验模板
+3. 粘贴到 `docs/experiences/[ROLE]/accumulated.md`
+4. 或使用 `./scripts/log-experience.sh`
+
+### Q: 找不到文档？
+
+**A**: 
+1. 只看这个 README.md
+2. 按需点击链接
+3. 找不到就问 @协调者
+
+---
+
+## 📊 组织健康度
+
+| 指标 | 今日 | 本周 | 目标 |
+|------|------|------|------|
+| 完成任务 | 0 | 0 | 10/天 |
+| 新增经验 | 0 | 0 | 30/天 |
+| 部署成功 | 0 | 0 | 1/天 |
 
 ---
 
 **文档位置**: `README.md`  
-**版本**: V2.0（导航中心版）  
+**版本**: V3.0（终极精简版）  
 **最后更新**: 2026-03-28  
-**维护者**: 左护法（天策府主官）  
-**反馈**: @左护法
+**维护者**: 协调者  
+**反馈**: @协调者
+
+---
+
+## 🚀 立即开始
+
+**司命大人**：说 `"你来做 [角色]"`  
+**你**：点击对应角色链接，自动激活！
