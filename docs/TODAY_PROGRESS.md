@@ -134,7 +134,7 @@
 | 00:34 | 开始 TASK-002 | 批量导出限制实施 |
 | 01:00 | ✅ TASK-002 完成 | 7928135 - 下载频率限制 + 审计日志 |
 
-### 镇抚司（墨锋）- 2026-03-28
+### 镇抚司（墨锋）- 2026-03-28 至 2026-03-29
 
 | 时间 | 进展 | 配置/问题 |
 |------|------|----------|
@@ -150,6 +150,15 @@
 | 19:20 | 更新地域配置 | ✅ 改为 ap-shanghai |
 | 19:23 | 完整测试通过 | ✅ 连接/上传/验证/删除全部成功 |
 | 19:25 | 同步 GitHub | ✅ 9ed6bb5 |
+| 19:30 | 开始 COS 集成任务 | 完成 AppModule 导入 |
+| 19:35 | ✅ 任务 1 完成 | 0bd1d97 - AppModule 导入 CosModule |
+| 19:40 | ✅ 任务 2 完成 | 6ee5cb7 - Resume 实体添加 COS 字段 |
+| 19:45 | ✅ 任务 3 完成 | 17332d2 - ResumeModule 导入 CosModule |
+| 19:50 | ✅ 任务 4 完成 | 24f08e9 - ResumeService 集成 COS 上传/删除 |
+| 19:55 | ✅ 任务 5 完成 | 已在任务 4 中完成 deleteResume 方法 |
+| 20:00 | ✅ 任务 6 完成 | f71d408 - 添加下载接口和更新 CosService |
+| 20:05 | ✅ 任务 7 完成 | ad2bf43 - 创建 COS 集成测试脚本 |
+| 20:10 | 更新进度文档 | 📝 TODAY_PROGRESS.md |
 
 ---
 
@@ -329,3 +338,49 @@ TEST_TOKEN=your_token ./scripts/test-download-limit.sh
 
 **最后更新**: 2026-03-29 01:00  
 **下次更新**: 每次提交前
+
+---
+
+## 🛡️ COS 集成任务（完成）✅
+
+**执行者**: 镇抚司（墨锋）  
+**完成时间**: 2026-03-29 20:10  
+**总提交数**: 7 个
+
+**任务清单**:
+
+| 任务 | 文件 | 提交 | 状态 |
+|------|------|------|------|
+| 1. AppModule 导入 CosModule | `backend/src/app.module.ts` | 0bd1d97 | ✅ |
+| 2. Resume 实体添加 COS 字段 | `backend/src/modules/resume/resume.entity.ts` | 6ee5cb7 | ✅ |
+| 3. ResumeModule 导入 CosModule | `backend/src/modules/resume/resume.module.ts` | 17332d2 | ✅ |
+| 4. ResumeService 集成 COS | `backend/src/modules/resume/resume.service.ts` | 24f08e9 | ✅ |
+| 5. deleteResume 删除 COS 文件 | `backend/src/modules/resume/resume.service.ts` | 24f08e9 | ✅ |
+| 6. 添加下载接口 | `backend/src/modules/resume/resume.controller.ts` | f71d408 | ✅ |
+| 7. 创建测试脚本 | `backend/scripts/test-cos-resume-integration.ts` | ad2bf43 | ✅ |
+
+**核心功能**:
+- ✅ 简历上传到 COS（自动生成 URL 和 Key）
+- ✅ 本地备份保留（可选）
+- ✅ 简历删除时同时删除 COS 文件
+- ✅ 下载接口返回签名 URL（1 小时有效期）
+- ✅ 完整的测试脚本（连接/上传/下载/删除）
+
+**数据库字段**:
+```typescript
+cosUrl: string;      // COS 文件 URL
+cosKey: string;      // COS 对象 key（用于删除）
+localPath: string;   // 本地备份路径
+```
+
+**API 接口**:
+```
+GET /resume/:id/download
+返回: { url: string, fileName: string, fileSize: number }
+```
+
+**测试方法**:
+```bash
+npm run ts-node -- backend/scripts/test-cos-resume-integration.ts
+```
+
