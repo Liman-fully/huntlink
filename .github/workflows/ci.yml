@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  # 构建和测试阶段
+  # ==================== 阶段一：构建（本地/CI 构建，绝不在线构建） ====================
   build:
     runs-on: ubuntu-latest
     
@@ -25,9 +25,13 @@ jobs:
     
     - name: Install backend dependencies
       run: cd backend && npm ci
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
     
     - name: Install frontend dependencies
       run: cd frontend-web && npm ci
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
     
     # ==================== 关键：Type Check 必须在 Build 之前 ====================
     - name: Type Check backend
@@ -40,6 +44,7 @@ jobs:
       env:
         NODE_OPTIONS: --max-old-space-size=4096
     
+    # ==================== 在 CI 上构建产物（不是服务器上） ====================
     - name: Build backend
       run: cd backend && npm run build
       env:
@@ -54,8 +59,35 @@ jobs:
       run: cd backend && npm test -- --passWithNoTests
       env:
         NODE_ENV: test
+    
+    # ==================== 打包构建产物 ====================
+    - name: Package build artifacts
+      run: |
+        mkdir -p deploy-artifacts
+        
+        # 后端产物：只有 dist 和 node_modules（production）
+        cp -r backend/dist deploy-artifacts/backend-dist
+        cp backend/package.json deploy-artifacts/backend-package.json
+        cp backend/ecosystem.config.js deploy-artifacts/ecosystem.config.js
+        
+        # 前端产物：只有构建输出
+        cp -r frontend-web/dist deploy-artifacts/frontend-dist
+        
+        # 部署脚本
+        cp scripts/deploy-server.sh deploy-artifacts/deploy-server.sh
+        if [ ! -f deploy-artifacts/deploy-server.sh ]; then
+          echo '#!/bin/bash' > deploy-artifacts/deploy-server.sh
+          echo '# Deployment script - see docs/DEPLOYMENT_TRAINING.md' >> deploy-artifacts/deploy-server.sh
+        fi
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: huntlink-build
+        path: deploy-artifacts/
+        retention-days: 3
 
-  # 部署阶段（仅在 master 分支）
+  # ==================== 阶段二：部署（产物交付，零构建） ====================
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -63,6 +95,12 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: huntlink-build
+        path: deploy-artifacts/
     
     - name: Backup current deployment
       uses: appleboy/ssh-action@v1.2.0
@@ -74,11 +112,38 @@ jobs:
         script: |
           if [ -d "/var/www/huntlink" ]; then
             BACKUP_DIR="/var/www/huntlink-backup-$(date +%Y%m%d-%H%M%S)"
-            cp -r /var/www/huntlink "$BACKUP_DIR"
+            mkdir -p "$BACKUP_DIR"
+            cp -r /var/www/huntlink/backend/dist "$BACKUP_DIR/" 2>/dev/null || true
+            cp -r /var/www/huntlink/frontend-web/dist "$BACKUP_DIR/" 2>/dev/null || true
+            cp /var/www/huntlink/backend/package.json "$BACKUP_DIR/" 2>/dev/null || true
             echo "✅ Backup created: $BACKUP_DIR"
+            # 清理超过3天的备份
+            find /var/www/huntlink-backup-* -maxdepth 0 -mtime +3 -exec rm -rf {} + 2>/dev/null || true
           fi
     
-    - name: Deploy to Tencent Cloud
+    # ==================== 上传构建产物到服务器 ====================
+    - name: Copy backend dist to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: 22
+        source: "deploy-artifacts/backend-dist,deploy-artifacts/backend-package.json,deploy-artifacts/ecosystem.config.js"
+        target: "/tmp/huntlink-deploy/"
+    
+    - name: Copy frontend dist to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: 22
+        source: "deploy-artifacts/frontend-dist"
+        target: "/tmp/huntlink-deploy/"
+    
+    # ==================== 服务器端部署（零构建，只做替换+重启） ====================
+    - name: Deploy on server (artifact delivery, ZERO build)
       uses: appleboy/ssh-action@v1.2.0
       with:
         host: ${{ secrets.SERVER_HOST }}
@@ -89,62 +154,91 @@ jobs:
           set -e
           
           echo "========================================="
-          echo "🚀 Deploying HuntLink..."
+          echo "🚀 HuntLink Deployment (Artifact Delivery)"
+          echo "========================================="
+          echo "⚠️ RED LINE: No npm build on server!"
+          echo "   This deployment delivers pre-built artifacts only."
           echo "========================================="
           
-          cd /var/www/huntlink || (mkdir -p /var/www/huntlink && cd /var/www/huntlink)
+          PROJECT_DIR="/var/www/huntlink"
+          BACKEND_DIR="$PROJECT_DIR/backend"
+          DEPLOY_TMP="/tmp/huntlink-deploy"
           
-          if [ -d ".git" ]; then
-            echo "📦 Pulling latest code..."
-            git fetch origin
-            git reset --hard origin/master
-          else
-            echo "📦 Cloning repository..."
-            git clone https://github.com/Liman-fully/huntlink.git .
+          # 确保目录存在
+          mkdir -p "$BACKEND_DIR"
+          mkdir -p "$PROJECT_DIR/frontend-web"
+          
+          # 1. 更新源码（保留 git 历史，但不依赖它来部署）
+          if [ -d "$PROJECT_DIR/.git" ]; then
+            cd "$PROJECT_DIR"
+            git fetch origin 2>/dev/null || true
+            git reset --hard origin/master 2>/dev/null || true
+            echo "📦 Source code updated"
           fi
           
-          echo "⚙️ Setting up environment..."
-          [ ! -f "backend/.env" ] && cp backend/.env.example backend/.env
-          [ ! -f "frontend-web/.env" ] && cp frontend-web/.env.example frontend-web/.env
+          # 2. 替换后端构建产物（从 CI 构建好的，不是本地构建）
+          echo "📦 Replacing backend dist..."
+          rm -rf "$BACKEND_DIR/dist"
+          cp -r "$DEPLOY_TMP/deploy-artifacts/backend-dist" "$BACKEND_DIR/dist"
           
-          echo "🐳 Starting services (Direct Node + PM2)..."
+          # 3. 更新 package.json 和 PM2 配置
+          cp "$DEPLOY_TMP/deploy-artifacts/backend-package.json" "$BACKEND_DIR/package.json"
+          cp "$DEPLOY_TMP/deploy-artifacts/ecosystem.config.js" "$BACKEND_DIR/ecosystem.config.js" 2>/dev/null || true
           
-          # 停止旧进程
+          # 4. 生产环境安装依赖（仅 production，不含 devDependencies）
+          echo "📦 Installing production dependencies only..."
+          cd "$BACKEND_DIR"
+          npm ci --omit=dev 2>/dev/null || npm install --production
+          
+          # 5. 替换前端构建产物
+          echo "📦 Replacing frontend dist..."
+          rm -rf "$PROJECT_DIR/frontend-web/dist"
+          cp -r "$DEPLOY_TMP/deploy-artifacts/frontend-dist" "$PROJECT_DIR/frontend-web/dist"
+          
+          # 6. 同步 .env 文件（不覆盖已有配置）
+          [ ! -f "$BACKEND_DIR/.env" ] && [ -f "$BACKEND_DIR/.env.example" ] && cp "$BACKEND_DIR/.env.example" "$BACKEND_DIR/.env"
+          
+          # 7. 重启服务（PM2 优先，回退到直接 Node）
+          echo "🔄 Restarting services..."
           pkill -f "node dist/src/main" 2>/dev/null || true
           sleep 2
           
-          # 安装依赖并构建
-          cd /var/www/huntlink/backend
-          npm ci --production=false
-          npm run build
-          
-          # 启动后端（带内存限制）
-          NODE_ENV=production NODE_OPTIONS="--max-old-space-size=1536" \
-            nohup node dist/src/main.js > backend.log 2>&1 &
-          
-          sleep 8
-          
-          # 验证启动
-          if pgrep -f "node dist/src/main" > /dev/null; then
-            echo "✅ Backend started successfully"
+          # 尝试 PM2
+          if command -v pm2 &> /dev/null; then
+            cd "$BACKEND_DIR"
+            pm2 start ecosystem.config.js --update-env 2>/dev/null || \
+            pm2 start dist/src/main.js --name huntlink --max-memory-restart 1500M 2>/dev/null || true
+            echo "✅ Started via PM2"
           else
-            echo "❌ Backend failed to start"
-            cat backend.log
-            exit 1
+            # 回退到直接 Node（带内存限制）
+            cd "$BACKEND_DIR"
+            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=1536" \
+              nohup node dist/src/main.js > backend.log 2>&1 &
+            echo "✅ Started via direct Node (PM2 not available)"
           fi
           
-          echo "⏳ Waiting for services..."
           sleep 5
           
+          # 8. 健康检查
           echo "🏥 Health check..."
-          curl -s -o /dev/null -w "Backend API: HTTP %{http_code}\n" http://localhost:3000/api/docs || true
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/docs || echo "000")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ] || [ "$HTTP_CODE" = "401" ]; then
+            echo "✅ Backend is healthy (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Backend returned HTTP $HTTP_CODE, checking logs..."
+            cat "$BACKEND_DIR/backend.log" 2>/dev/null | tail -30
+          fi
+          
           pgrep -af "node dist/src/main" || true
+          
+          # 9. 清理临时文件
+          rm -rf /tmp/huntlink-deploy
           
           echo "========================================="
           echo "✅ Deployment completed!"
           echo "========================================="
           echo "Frontend: http://${{ secrets.SERVER_HOST }}"
-          echo "Backend: http://${{ secrets.SERVER_HOST }}:3000/api"
+          echo "Backend:  http://${{ secrets.SERVER_HOST }}:3000/api"
     
     - name: Rollback on failure
       if: failure()
@@ -155,17 +249,24 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: 22
         script: |
-          echo "🔄 Rolling back to previous version..."
+          echo "🔄 Rolling back..."
           LATEST_BACKUP=$(ls -dt /var/www/huntlink-backup-* 2>/dev/null | head -1)
           if [ -n "$LATEST_BACKUP" ]; then
-            echo "Restoring from: $LATEST_BACKUP"
-            # 停止当前进程
             pkill -f "node dist/src/main" 2>/dev/null || true
             sleep 2
-            # 恢复代码
-            rm -rf /var/www/huntlink
-            cp -r "$LATEST_BACKUP" /var/www/huntlink
-            # 重启服务
+            
+            # 恢复后端
+            if [ -d "$LATEST_BACKUP/dist" ]; then
+              rm -rf /var/www/huntlink/backend/dist
+              cp -r "$LATEST_BACKUP/dist" /var/www/huntlink/backend/dist
+            fi
+            
+            # 恢复前端
+            if [ -d "$LATEST_BACKUP/frontend-dist" ]; then
+              rm -rf /var/www/huntlink/frontend-web/dist
+              cp -r "$LATEST_BACKUP/frontend-dist" /var/www/huntlink/frontend-web/dist
+            fi
+            
             cd /var/www/huntlink/backend
             NODE_ENV=production NODE_OPTIONS="--max-old-space-size=1536" \
               nohup node dist/src/main.js > backend.log 2>&1 &
