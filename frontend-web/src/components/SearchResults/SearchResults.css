@@ -1,0 +1,126 @@
+/* 搜索结果组件样式 */
+.search-results {
+  width: 100%;
+}
+
+/* 加载状态 */
+.search-results--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-text {
+  color: #86909C;
+  font-size: 14px;
+}
+
+/* 空状态 */
+.search-results--empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* 结果头部 */
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #E5E6EB;
+}
+
+.results-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.results-count {
+  font-size: 18px;
+  color: #0052D9;
+  font-weight: 600;
+  margin: 0 4px;
+}
+
+.results-range {
+  color: #86909C;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+/* 结果列表 */
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-item {
+  width: 100%;
+}
+
+/* 分页 */
+.results-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding: 24px 0;
+}
+
+.results-pagination .t-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .results-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .results-info {
+    width: 100%;
+  }
+
+  .results-list {
+    gap: 12px;
+  }
+
+  .results-pagination {
+    margin-top: 24px;
+  }
+
+  .results-pagination .t-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* 动画效果 */
+.result-item {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
