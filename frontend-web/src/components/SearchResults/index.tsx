@@ -6,13 +6,13 @@ import './SearchResults.css';
 export interface Candidate {
   id: string;
   name: string;
-  currentTitle: string;
-  currentCompany: string;
-  experience: string;
-  education: string;
+  currentTitle?: string;
+  currentCompany?: string;
+  experience?: string;
+  education?: string;
   school?: string;
   location: string;
-  expectedSalary: string;
+  expectedSalary?: string;
   skills: string[];
   avatar?: string;
   lastActive: string;

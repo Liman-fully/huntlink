@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Input, Button, Loading } from 'tdesign-react';
 import { SearchIcon, CloseIcon } from 'tdesign-icons-react';
+import { getSearchSuggestions } from '../../services/searchApi';
 import './SearchBox.css';
 
 export interface SearchBoxProps {
@@ -36,7 +37,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // 模拟搜索建议 API 调用
+  // 调用后端搜索建议 API
   const fetchSuggestions = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSuggestions([]);
@@ -46,21 +47,8 @@ const SearchBox: React.FC<SearchBoxProps> = ({
 
     setSuggestionLoading(true);
     try {
-      // TODO: 替换为实际的后端 API
-      // const res = await fetch(`/api/candidates/search/suggestions?q=${encodeURIComponent(query)}`);
-      // const data = await res.json();
-      // setSuggestions(data.suggestions || []);
-      
-      // 模拟数据
-      const mockSuggestions = [
-        `${query} 工程师`,
-        `${query} 经理`,
-        `${query} 总监`,
-        `高级${query}`,
-        `资深${query}`,
-      ].filter((_, i) => i < Math.floor(Math.random() * 3) + 2);
-      
-      setSuggestions(mockSuggestions);
+      const data = await getSearchSuggestions(query, 8);
+      setSuggestions(data);
       setShowSuggestions(true);
     } catch (error) {
       console.error('Failed to fetch suggestions:', error);
