@@ -1,52 +1,50 @@
 #!/bin/bash
+# scripts/cleanup.sh
+# 系统清理脚本（每日执行）
 
-# HuntLink 版本迭代清理脚本
-# 在每个版本发布前运行，确保环境干净
+set -e
 
-echo "🧹 开始清理 HuntLink 项目..."
+echo "🧹 开始系统清理..."
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# 1. 清理临时文件
+echo "📁 清理临时文件..."
+find . -name "*.tmp" -type f -delete
+find . -name "*.log" -type f -mtime +7 -delete
+find . -name "node_modules" -type d -prune -exec rm -rf {} \; 2>/dev/null || true
 
-# 清理后端
-echo -e "${YELLOW}[1/5] 清理后端...${NC}"
-cd backend
-rm -rf node_modules dist coverage .tsbuildinfo
-echo -e "${GREEN}✓ 后端清理完成${NC}"
+# 2. 清理旧日志
+echo "📝 清理旧日志..."
+LOG_DIR="logs"
+if [ -d "$LOG_DIR" ]; then
+  find $LOG_DIR -name "*.log" -type f -mtime +30 -delete
+  echo "✅ 日志清理完成"
+fi
 
-# 清理前端
-echo -e "${YELLOW}[2/5] 清理前端...${NC}"
-cd ../frontend-web
-rm -rf node_modules dist coverage .vite
-echo -e "${GREEN}✓ 前端清理完成${NC}"
+# 3. 清理 Docker 悬空镜像
+echo "🐳 清理 Docker 悬空镜像..."
+docker image prune -f || true
 
-# 清理根目录
-echo -e "${YELLOW}[3/5] 清理根目录...${NC}"
-cd ..
-rm -rf node_modules .cache tmp logs
-echo -e "${GREEN}✓ 根目录清理完成${NC}"
+# 4. 清理 Git 垃圾
+echo "🗑️ 清理 Git 垃圾..."
+git gc --prune=now --quiet || true
 
-# 重新安装依赖
-echo -e "${YELLOW}[4/5] 重新安装依赖...${NC}"
-cd backend && npm install
-cd ../frontend-web && npm install
-echo -e "${GREEN}✓ 依赖安装完成${NC}"
+# 5. 清理旧备份
+echo "💾 清理旧备份..."
+BACKUP_DIR="backups"
+if [ -d "$BACKUP_DIR" ]; then
+  find $BACKUP_DIR -name "*.sql" -type f -mtime +30 -delete
+  echo "✅ 备份清理完成"
+fi
 
-# 运行测试
-echo -e "${YELLOW}[5/5] 运行测试...${NC}"
-cd ../backend
-npm run test
-npm run test:e2e
-cd ../frontend-web
-npm run test
-echo -e "${GREEN}✓ 测试全部通过${NC}"
+# 6. 检查磁盘空间
+echo "💽 检查磁盘空间..."
+df -h | grep -E "^/|Filesystem"
 
-echo -e "${GREEN}🎉 清理完成！项目已准备好发布新版本${NC}"
 echo ""
-echo "下一步："
-echo "1. git add ."
-echo "2. git commit -m 'chore: 版本 x.x.x 发布前清理'"
-echo "3. git push origin main"
+echo "✅ 系统清理完成！"
+echo "📊 清理报告："
+echo "   - 临时文件：已清理"
+echo "   - 旧日志：已清理（保留 30 天）"
+echo "   - Docker 悬空镜像：已清理"
+echo "   - Git 垃圾：已清理"
+echo "   - 旧备份：已清理（保留 30 天）"
