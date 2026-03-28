@@ -31,7 +31,7 @@ const SearchHero: React.FC<SearchHeroProps> = ({
     onSearch?.(keyword, activeFilters);
   };
 
-  const handleKeypress = (value: string, context: { e: React.KeyboardEvent }) => {
+  const handleKeypress = (_value: string, context: { e: React.KeyboardEvent }) => {
     if (context.e.key === 'Enter') {
       handleSearch();
     }

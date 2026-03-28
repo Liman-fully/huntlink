@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Button, Checkbox, Space } from 'tdesign-react';
-import { DownloadIcon, UserAddIcon, MessageIcon } from 'tdesign-icons-react';
+import { DownloadIcon, UserAddIcon, ChatIcon } from 'tdesign-icons-react';
 import './BatchActionBar.css';
 
 export interface BatchActionBarProps {
@@ -59,7 +59,7 @@ const BatchActionBar: React.FC<BatchActionBarProps> = ({
             </Button>
             <Button
               variant="outline"
-              icon={<MessageIcon />}
+              icon={<ChatIcon />}
               onClick={onSendInterview}
             >
               发送面试

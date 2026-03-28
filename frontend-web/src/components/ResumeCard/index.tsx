@@ -64,9 +64,7 @@ const ResumeCard: React.FC<ResumeCardProps> = ({
     onClick?.(data.id);
   };
 
-  const handleCardWrapperClick = () => {
-    handleCardClick();
-  };
+
 
   const moreActions = [
     { content: '分享', value: 'share' },

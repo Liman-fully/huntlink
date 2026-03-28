@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Radio, Space } from 'tdesign-react';
+import { Card, Radio } from 'tdesign-react';
 import './DataTrendChart.css';
 
 export interface ChartDataPoint {
