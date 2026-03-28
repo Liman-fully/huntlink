@@ -82,6 +82,41 @@ export class CandidateController {
     };
   }
 
+  @Post()
+  @ApiOperation({ summary: '创建候选人' })
+  async createCandidate(@Body() data: any) {
+    return this.candidateService.create(data);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: '更新候选人' })
+  async updateCandidate(@Param('id') id: number, @Body() data: any) {
+    return this.candidateService.update(id, data);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '删除候选人' })
+  async deleteCandidate(@Param('id') id: number) {
+    await this.candidateService.delete(id);
+    return { success: true };
+  }
+
+  @Patch(':id/tags')
+  @ApiOperation({ summary: '更新标签' })
+  async updateTags(@Param('id') id: number, @Body('tags') tags: string[]) {
+    return this.candidateService.update(id, { tags });
+  }
+
+  @Patch(':id/group')
+  @ApiOperation({ summary: '更新分组' })
+  async updateGroup(
+    @Param('id') id: number,
+    @Body('groupId') groupId: number,
+    @Body('groupName') groupName: string,
+  ) {
+    return this.candidateService.update(id, { groupId, groupName });
+  }
+
   @Get(':id/highlight')
   @ApiOperation({ summary: '高亮显示搜索结果' })
   @ApiQuery({ name: 'keyword', required: true, description: '关键词' })

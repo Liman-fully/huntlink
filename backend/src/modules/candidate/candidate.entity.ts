@@ -42,6 +42,12 @@ export class Candidate {
   @Column({ name: 'is_verified', default: false })
   isVerified: boolean;
 
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
+
+  @Column({ name: 'group_name', length: 50, nullable: true })
+  groupName: string;
+
   // 猎头业务扩展字段
   @Column({ type: 'text', array: true, default: '{}' })
   tags: string[];
