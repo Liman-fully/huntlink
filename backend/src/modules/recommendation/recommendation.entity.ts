@@ -14,7 +14,7 @@ import { User } from '../user/user.entity';
  * 存储为用户生成的候选人推荐及其匹配分数
  */
 @Entity('recommendations')
-@Index(['user_id', 'created_at'])
+@Index(['userId', 'createdAt'])
 @Index(['score'])
 export class Recommendation {
   @PrimaryColumn('uuid')
