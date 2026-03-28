@@ -1,0 +1,62 @@
+name: 信息同步检查
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+  push:
+    branches: [ master ]
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # 获取完整历史
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    
+    - name: 安装依赖
+      run: |
+        cd backend && npm install
+        cd ../frontend-web && npm install
+    
+    - name: 检查文档同步
+      run: |
+        echo "🔍 检查最新提交的文档同步状态"
+        
+        # 获取最新提交的提交信息
+        LATEST_COMMIT=$(git log -1 --pretty=%B)
+        
+        # 提取任务 ID
+        TASK_IDS=$(echo "$LATEST_COMMIT" | grep -oE "DEV-[0-9]+|BUG-[0-9]+|TASK-[0-9]+" || echo "")
+        
+        if [ -n "$TASK_IDS" ]; then
+          echo "检测到任务 ID: $TASK_IDS"
+          
+          for TASK_ID in $TASK_IDS; do
+            echo "检查 $TASK_ID..."
+            
+            # 检查 TODAY_PROGRESS.md
+            if ! grep -q "$TASK_ID" docs/TODAY_PROGRESS.md; then
+              echo "❌ 错误：$TASK_ID 未在 docs/TODAY_PROGRESS.md 中记录"
+              exit 1
+            fi
+            
+            # 检查 .task-board.md
+            if ! grep -q "$TASK_ID" .task-board.md; then
+              echo "❌ 错误：$TASK_ID 未在 .task-board.md 中记录"
+              exit 1
+            fi
+            
+            echo "✅ $TASK_ID: 文档同步检查通过"
+          done
+        else
+          echo "ℹ️ 提交信息未包含任务 ID，跳过检查"
+        fi
+        
+        echo "✅ 所有检查通过"
