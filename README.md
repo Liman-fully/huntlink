@@ -142,37 +142,69 @@ COORDINATOR-小红 -002
 1. 保存所有更改
 2. git add + git commit + git push
 3. 更新任务看板状态
-4. 记录当前进度到 docs/TODAY_PROGRESS.md
-5. 通知@协调者
+4. 记录当前进度到 docs/progress/devices/[你的设备].md
+5. 广播离开消息
+6. 通知@协调者
 ```
 
-### 同步检查清单
-
-**每次离开前必须完成**：
-- [ ] 代码已 push 到云端
-- [ ] 任务看板已更新
-- [ ] 今日进展已记录
-- [ ] 配置已文档化
-- [ ] 问题已记录
-
-### 最新进展标识
+### 分布式进度系统（多设备协作）
 
 **查看最新进展**：
 ```bash
-# 1. 查看今日进展（实时）
-cat docs/TODAY_PROGRESS.md
+# 1. 查看总进度（所有设备汇总）
+cat docs/progress/SUMMARY.md
 
-# 2. 查看最新提交
-git log --oneline -5
+# 2. 查看各设备进度
+ls docs/progress/devices/
+cat docs/progress/devices/device-*.md
 
-# 3. 查看活跃成员
-cat .task-board.md | grep "活跃成员"
+# 3. 查看最新广播（实时通知）
+ls -lt docs/progress/broadcasts/ | head -5
+cat $(ls -t docs/progress/broadcasts/ | head -1)
+
+# 4. 查看活跃设备（心跳）
+ls docs/progress/heartbeats/
 ```
 
-**最新进展文档**：
-- `docs/TODAY_PROGRESS.md` - **实时进展（最重要！）**
-- `.task-board.md` - 任务状态
-- `docs/experiences/[ROLE]/accumulated.md` - 经验记录
+**创建你的进度文件**：
+```bash
+# 生成设备指纹
+DEVICE_ID="device-$(hostname)-$(whoami)"
+
+# 创建进度文件
+cat > docs/progress/devices/$DEVICE_ID.md << EOF
+# $DEVICE_ID 进度
+
+**加入时间**: $(date)
+**今日目标**: [填写]
+
+## 当前任务
+- [ ] 任务 1
+
+## 最新进展
+- $(date +%H:%M) 开始任务 1
+EOF
+
+# 提交
+git add docs/progress/devices/$DEVICE_ID.md
+git commit -m "progress: $DEVICE_ID 加入"
+git push origin master
+```
+
+**自动同步**（每 5 分钟）：
+```bash
+# 运行自动同步脚本
+./scripts/auto-sync.sh
+
+# 或设置 cron job
+*/5 * * * * ./scripts/auto-sync.sh
+```
+
+**进度文档**：
+- `docs/progress/SUMMARY.md` - **总进度汇总（最全面）**
+- `docs/progress/devices/[设备].md` - **各设备进度（避免冲突）**
+- `docs/progress/broadcasts/时间戳.md` - **实时广播（最新通知）**
+- `docs/TODAY_PROGRESS.md` - **今日进展（备用）**
 
 ---
 
