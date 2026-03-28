@@ -39,9 +39,9 @@ export class DownloadLimitGuard implements CanActivate {
 
     // 并发检查所有限制
     const [minuteCount, hourCount, dayCount] = await Promise.all([
-      this.redisService.get(minuteKey),
-      this.redisService.get(hourKey),
-      this.redisService.get(dayKey),
+      this.redisService.getClient().get(minuteKey),
+      this.redisService.getClient().get(hourKey),
+      this.redisService.getClient().get(dayKey),
     ]);
 
     const currentMinute = parseInt(minuteCount || '0', 10);

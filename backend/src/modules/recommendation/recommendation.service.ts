@@ -135,7 +135,7 @@ export class RecommendationService {
     }
 
     // 7. 缓存结果
-    await this.cacheService.set(cacheKey, recommendations, { ttl: this.CACHE_TTL });
+    await this.cacheService.set(cacheKey, recommendations, this.CACHE_TTL);
 
     this.logger.log(`Generated ${recommendations.length} recommendations for user ${userId}`);
     return recommendations;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import COS from 'cos-nodejs-sdk-v5';
 import { ConfigService } from '@nestjs/config';
+const COS = require('cos-nodejs-sdk-v5');
 
 export interface UploadResult {
   success: boolean;
@@ -11,7 +11,7 @@ export interface UploadResult {
 
 @Injectable()
 export class CosService {
-  private cos: COS;
+  private cos: any;
   private bucket: string;
   private region: string;
 

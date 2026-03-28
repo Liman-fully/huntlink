@@ -76,14 +76,36 @@ export class ExportService {
 
       // 根据格式导出
       let filePath: string;
+      let standardFileName: string;
+      
       if (format === 'pdf') {
         filePath = await this.pdfExporter.export(resumes, userId);
+        
+        // 使用第一份简历生成标准化文件名（单文件导出）
+        if (resumes.length === 1) {
+          standardFileName = this.generateStandardFileName(resumes[0]);
+        }
       } else {
         filePath = await this.excelExporter.export(resumes, userId);
+        standardFileName = `批量导出_${resumes.length}份_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.xlsx`;
       }
 
-      // TODO: 集成 COS 存储
-      // const cosUrl = await this.uploadToCos(filePath);
+      // 记录下载记录
+      for (const resume of resumes) {
+        await this.downloadRecordService.createRecord({
+          userId,
+          resumeId: resume.id,
+          originalFileName: resume.fileName,
+          standardFileName: standardFileName || this.generateStandardFileName(resume),
+          filePath,
+          fileSize: resume.fileSize,
+          downloadType: resumes.length === 1 ? 'single' : 'batch',
+          candidateName: resume.basicInfo?.name,
+          candidatePhone: resume.basicInfo?.phone,
+          expectedPosition: resume.jobIntention?.expectedPosition,
+          exportFormat: format,
+        });
+      }
 
       // 更新状态为完成
       await this.taskRepo.update(taskId, {
@@ -93,7 +115,7 @@ export class ExportService {
         completedAt: new Date(),
       });
 
-      return { success: true, filePath };
+      return { success: true, filePath, standardFileName };
     } catch (error) {
       // 更新状态为失败
       await this.taskRepo.update(taskId, {
@@ -166,70 +188,5 @@ export class ExportService {
       .replace(/[<>:"/\\|？*]/g, '') // 移除非法字符
       .replace(/\s+/g, '_') // 空格转下划线
       .trim();
-  }
-
-  /**
-   * 处理导出（队列 worker）- 更新版本
-   */
-  async processExport(data: any) {
-    const { taskId, userId, resumeIds, format } = data;
-
-    try {
-      // 更新状态为处理中
-      await this.taskRepo.update(taskId, { status: TaskStatus.PROCESSING });
-
-      // 获取所有简历数据
-      const resumes = await this.getResumes(resumeIds, userId);
-
-      // 根据格式导出
-      let filePath: string;
-      let standardFileName: string;
-      
-      if (format === 'pdf') {
-        filePath = await this.pdfExporter.export(resumes, userId);
-        
-        // 使用第一份简历生成标准化文件名（单文件导出）
-        if (resumes.length === 1) {
-          standardFileName = this.generateStandardFileName(resumes[0]);
-        }
-      } else {
-        filePath = await this.excelExporter.export(resumes, userId);
-        standardFileName = `批量导出_${resumes.length}份_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.xlsx`;
-      }
-
-      // 记录下载记录
-      for (const resume of resumes) {
-        await this.downloadRecordService.createRecord({
-          userId,
-          resumeId: resume.id,
-          originalFileName: resume.fileName,
-          standardFileName: standardFileName || this.generateStandardFileName(resume),
-          filePath,
-          fileSize: resume.fileSize,
-          downloadType: resumes.length === 1 ? 'single' : 'batch',
-          candidateName: resume.basicInfo?.name,
-          candidatePhone: resume.basicInfo?.phone,
-          expectedPosition: resume.jobIntention?.expectedPosition,
-          exportFormat: format,
-        });
-      }
-
-      // 更新状态为完成
-      await this.taskRepo.update(taskId, {
-        status: TaskStatus.COMPLETED,
-        filePath,
-        processedCount: resumes.length,
-        completedAt: new Date(),
-      });
-
-      return { success: true, filePath, standardFileName };
-    } catch (error) {
-      // 更新状态为失败
-      await this.taskRepo.update(taskId, {
-        status: TaskStatus.FAILED,
-        errorMessage: error.message,
-      });
-      throw error;
-    }
   }
 }

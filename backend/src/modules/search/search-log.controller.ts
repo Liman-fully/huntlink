@@ -11,8 +11,8 @@ export class SearchLogController {
 
   @Get('hot-terms')
   @ApiOperation({ summary: '获取热门搜索词' })
-  @ApiQuery({ name: 'days', required: false, default: 7 })
-  @ApiQuery({ name: 'limit', required: false, default: 100 })
+  @ApiQuery({ name: 'days', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async getHotSearchTerms(@Query('days') days: number = 7, @Query('limit') limit: number = 100) {
     const terms = await this.searchLogService.getHotSearchTerms(days, limit);
     return {
@@ -23,7 +23,7 @@ export class SearchLogController {
 
   @Get('zero-results')
   @ApiOperation({ summary: '获取零结果搜索词' })
-  @ApiQuery({ name: 'days', required: false, default: 7 })
+  @ApiQuery({ name: 'days', required: false })
   async getZeroResultTerms(@Query('days') days: number = 7) {
     const terms = await this.searchLogService.getZeroResultTerms(days);
     return {
@@ -34,7 +34,7 @@ export class SearchLogController {
 
   @Get('stats')
   @ApiOperation({ summary: '获取搜索统计' })
-  @ApiQuery({ name: 'days', required: false, default: 7 })
+  @ApiQuery({ name: 'days', required: false })
   async getSearchStats(@Query('days') days: number = 7) {
     const stats = await this.searchLogService.getSearchStats(days);
     return {
@@ -45,7 +45,7 @@ export class SearchLogController {
 
   @Get('history')
   @ApiOperation({ summary: '获取用户搜索历史' })
-  @ApiQuery({ name: 'limit', required: false, default: 20 })
+  @ApiQuery({ name: 'limit', required: false })
   async getUserSearchHistory(@Request() req, @Query('limit') limit: number = 20) {
     const history = await this.searchLogService.getUserSearchHistory(req.user.id, limit);
     return {

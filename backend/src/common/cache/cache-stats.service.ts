@@ -99,7 +99,7 @@ export class CacheStatsService {
   async getMemoryUsage(): Promise<number> {
     const info = await this.redis.info('memory');
     const match = info.match(/used_memory_human:(.+)/);
-    return match ? match[1].trim() : 0;
+    return match ? parseFloat(match[1].trim()) : 0;
   }
 
   /**
