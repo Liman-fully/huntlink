@@ -48,7 +48,6 @@ export class ScoreRecord {
   };
 
   @Column({ type: 'json', nullable: true })
-  @Index()
   matchContext: {
     jobId?: string;
     jobTitle?: string;
