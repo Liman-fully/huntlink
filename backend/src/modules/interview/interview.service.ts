@@ -69,8 +69,36 @@ export class InterviewService {
 
   async updateStatus(id: string, status: string): Promise<Interview> {
     const interview = await this.findOne(id);
+    const oldStatus = interview.status;
     interview.status = status as any;
-    return this.interviewRepository.save(interview);
+    const saved = await this.interviewRepository.save(interview);
+    
+    // 状态机流转后的自动处理逻辑
+    await this.handleStatusTransition(saved, oldStatus);
+    
+    return saved;
+  }
+
+  /**
+   * 面试状态机核心逻辑：处理状态转换后的副作用
+   */
+  private async handleStatusTransition(interview: Interview, oldStatus: string) {
+    const newStatus = interview.status;
+    
+    // 如果面试完成，自动触发候选人状态更新
+    if (newStatus === 'completed' && oldStatus !== 'completed') {
+      // 这里的逻辑应调用 CandidateService，末将选择通过事件或直接引用
+      // 为了 2G 内存下的简单直接，此处采用直接更新
+      await this.interviewRepository.query(
+        'UPDATE candidates SET status = $1 WHERE id = $2',
+        ['interviewed', interview.candidateId]
+      );
+    }
+    
+    // 如果面试取消，释放资源或发送通知
+    if (newStatus === 'cancelled') {
+      console.log(`[InterviewStateMachine] Interview ${interview.id} cancelled. Releasing resources...`);
+    }
   }
 
   async updateFeedback(id: string, updateFeedbackDto: UpdateFeedbackDto): Promise<Interview> {
