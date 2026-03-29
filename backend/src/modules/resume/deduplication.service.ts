@@ -16,7 +16,7 @@ export class DeduplicationService {
    * 科学去重判断逻辑
    * 维度：姓名 + (手机 OR 邮箱 OR (学校 + 公司 + 职位))
    */
-  async findExistingResume(parsedData: any): Promise<Resume | null> {
+  async findExistingTalent(parsedData: any): Promise<Resume | null> {
     const { name, phone, email, school, currentCompany, currentTitle } = parsedData;
 
     if (!name) return null;

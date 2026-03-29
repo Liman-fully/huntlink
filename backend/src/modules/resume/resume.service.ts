@@ -304,20 +304,6 @@ export class ResumeService {
     await this.resumeRepository.remove(resume);
   }
 }
-
-    await this.resumeRepository.save(resume);
-
-    // 将解析任务加入队列
-    await this.resumeQueue.add('parse', { resumeId: resume.id }, {
-      attempts: 3,
-      backoff: 5000,
-      removeOnComplete: true,
-    });
-
-    return resume;
-  }
-
-  async parseResumeAsync(resumeId: string): Promise<void> {
     const resume = await this.resumeRepository.findOne({ where: { id: resumeId } });
     if (!resume) return;
 
