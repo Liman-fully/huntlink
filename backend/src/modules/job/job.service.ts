@@ -46,6 +46,14 @@ export class JobService {
     };
   }
 
+  async findOne(id: string): Promise<Job> {
+    const job = await this.jobRepository.findOne({ where: { id } });
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${id} not found`);
+    }
+    return job;
+  }
+
   async create(createJobDto: CreateJobDto, userId: string): Promise<Job> {
     // 扣除积分逻辑 (发布职位扣除100积分)
     const pointsRequired = 100;
@@ -60,52 +68,6 @@ export class JobService {
       createdBy: userId,
     });
     
-    if (job.status === 'published' && !job.publishedAt) {
-      job.publishedAt = new Date();
-    }
-    return this.jobRepository.save(job);
-  }
-
-
-@Injectable()
-export class JobService {
-  constructor(
-    @InjectRepository(Job)
-    private readonly jobRepository: Repository<Job>,
-  ) {}
-
-  async findAll(params: FindAllParams) {
-    const { page = 1, limit = 20, status } = params;
-    const queryBuilder = this.jobRepository.createQueryBuilder('job');
-
-    if (status && status !== 'all') {
-      queryBuilder.andWhere('job.status = :status', { status });
-    }
-
-    queryBuilder.skip((page - 1) * limit).take(limit);
-    queryBuilder.orderBy('job.createdAt', 'DESC');
-
-    const [data, total] = await queryBuilder.getManyAndCount();
-
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }
-
-  async findOne(id: string): Promise<Job> {
-    const job = await this.jobRepository.findOne({ where: { id } });
-    if (!job) {
-      throw new NotFoundException(`Job with ID ${id} not found`);
-    }
-    return job;
-  }
-
-  async create(createJobDto: CreateJobDto): Promise<Job> {
-    const job = this.jobRepository.create(createJobDto);
     if (job.status === 'published' && !job.publishedAt) {
       job.publishedAt = new Date();
     }

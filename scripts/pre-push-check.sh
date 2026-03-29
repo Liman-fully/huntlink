@@ -10,9 +10,18 @@ echo "========================================="
 echo "🔍 猎脉项目 - 提交前检查"
 echo "========================================="
 
-# 1. 检查 TypeScript 类型
+# 1. 检查 Git 冲突标记（Gemini 架构师建议）
 echo ""
-echo "📋 Step 1: TypeScript 类型检查..."
+echo "📋 Step 1: Git 冲突标记检查..."
+if grep -r "<<<<<<< " backend/src/ 2>/dev/null; then
+  echo "❌ 发现 Git 冲突标记！请先解决冲突。"
+  exit 1
+fi
+echo "✅ 无冲突标记"
+
+# 2. 检查 TypeScript 类型
+echo ""
+echo "📋 Step 2: TypeScript 类型检查..."
 cd backend
 if npx tsc --noEmit; then
   echo "✅ Backend TypeScript 检查通过"
