@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
 import { CosModule } from '../../common/storage/cos.module';
 import { ResumeController } from './resume.controller';
 import { ResumeService } from './resume.service';
@@ -17,6 +18,10 @@ import { Talent } from '../talent/talent.entity';
   imports: [
     TypeOrmModule.forFeature([Resume, ResumeFolder, Talent]),
     CosModule,
+    BullModule.registerQueue(
+      { name: 'resume-parsing' },
+      { name: 'email-fetching' },
+    ),
   ],
   controllers: [ResumeController],
   providers: [
