@@ -1,9 +1,9 @@
-import { IsString, IsOptional, IsEnum, IsUUID, IsInt, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsUUID, IsInt, IsDateString, IsNumber } from 'class-validator';
 import { InterviewStatus } from '../interview.entity';
 
 export class CreateInterviewDto {
-  @IsUUID()
-  candidateId: string;
+  @IsNumber()
+  candidateId: number;
 
   @IsUUID()
   jobId: string;
