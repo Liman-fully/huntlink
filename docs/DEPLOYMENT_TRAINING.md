@@ -231,8 +231,7 @@ SSH 登录服务器 → 拉取代码 → 重启服务
 | `SERVER_HOST` | `150.158.51.199` | 服务器 IP |
 | `SERVER_USER` | `root` | SSH 用户名 |
 | `SERVER_SSH_KEY` | [SSH 私钥] | SSH 密钥 |
-| `MYSQL_ROOT_PASSWORD` | [密码] | MySQL root 密码 |
-| `MYSQL_PASSWORD` | [密码] | MySQL 用户密码 |
+| `POSTGRES_PASSWORD` | `huntlink_user_password_2026` | PostgreSQL 密码 |
 | `JWT_SECRET` | [密钥] | JWT 签名密钥 |
 
 **配置位置**：
@@ -258,7 +257,31 @@ cat ~/.ssh/huntlink-deploy
 # 复制输出，添加到 SERVER_SSH_KEY
 ```
 
-### 3. 服务器权限配置
+### 3. 数据库配置（PostgreSQL）
+
+**重要**：已删除 MySQL，全面改用 PostgreSQL 16
+
+**环境变量**：
+```bash
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=huntlink
+DB_PASSWORD=huntlink_user_password_2026
+DB_DATABASE=huntlink
+```
+
+**Docker Compose 配置**：
+```yaml
+postgres:
+  image: postgres:16
+  container_name: huntlink-postgres
+  environment:
+    POSTGRES_DB: huntlink
+    POSTGRES_USER: huntlink
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+```
+
+### 4. 服务器权限配置
 
 **确保部署用户有权限**：
 ```bash
@@ -301,6 +324,27 @@ git pull origin master
 ---
 
 ## 🚨 部署问题排查
+
+### 问题 0: MySQL vs PostgreSQL 混淆 ❌
+
+**症状**：
+```
+配置了 MYSQL_ROOT_PASSWORD 但服务无法启动
+```
+
+**原因**：
+- ❌ 已删除 MySQL，改用 PostgreSQL 16
+- ❌ 文档中的 MYSQL 配置是旧的
+
+**解决方案**：
+```bash
+# 使用 PostgreSQL 配置
+POSTGRES_PASSWORD=huntlink_user_password_2026
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=huntlink
+DB_DATABASE=huntlink
+```
 
 ### 问题 1: GitHub Actions 失败
 
@@ -425,6 +469,7 @@ docker-compose logs backend
 |-------|---------------|---------|---------|------|
 | 都统 | ✅ | ✅ | ✅ | 已认证 |
 | 右护法 | ⏳ | ⏳ | ⏳ | 培训中 |
+| 左护法 | ⏳ | ⏳ | ⏳ | 培训中（MySQL 混淆错误） |
 | 新人 | ⏳ | ⏳ | ⏳ | 待培训 |
 
 **目标**：全员 100% 通过

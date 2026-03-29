@@ -203,7 +203,7 @@ npm install cos-nodejs-sdk-v5
 
 | 问题 | 解决方案 | 状态 | 执行者 |
 |------|---------|------|--------|
-| BUG-001 部署未验证 | SSH 执行 verify-deployment.sh | ⏳ 等待用户执行 | 脚本已就绪 |
+| BUG-001 部署验证 | Docker Compose 部署 PostgreSQL | ✅ 已完成（都统） | docker-compose.optimized.yml 已配置 |
 | BUG-002 COS 密钥未配置 | 配置.env 文件 | ✅ 已完成（连接/上传/删除全部通过）| 镇抚司（墨锋）|
 | BUG-003 文档内容重复 | 清理 TODAY_PROGRESS | ✅ 已完成 | 左护法 |
 | BUG-004 文档 MySQL 描述 | 更新为 PostgreSQL | ✅ 已完成 | 左护法 |

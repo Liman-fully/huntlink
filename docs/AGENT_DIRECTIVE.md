@@ -2,6 +2,52 @@
 
 > **所有参与猎脉开发的 Agent 必须将本文档作为底层约束严格执行。**
 > 违反以下任何一条准则都可能导致生产环境宕机或数据不一致。
+> 
+> **前置要求**：执行任何部署操作前，必须先学习并确认 `docs/DEPLOYMENT_TRAINING.md`。
+
+---
+
+## 第零阶段：部署红线（最高优先级）
+
+> **部署红线违反 = 生产事故。以下规则优先级高于其他所有阶段。**
+
+### R-01 禁止在服务器上构建
+
+**服务器内存 2GB，执行 `npm run build` 必定 OOM。**
+
+```
+❌ 绝对禁止：ssh server "cd backend && npm run build"
+✅ 正确流程：本地构建 → 上传 dist/ → 服务器只做替换+重启
+```
+
+### R-02 禁止全量依赖安装
+
+```
+❌ npm install         # 装全部 devDependencies，占 500MB+
+✅ npm ci --omit=dev   # 只装 production 依赖
+```
+
+### R-03 禁止 Docker Compose
+
+```
+❌ docker-compose up -d --build   # 2G 内存不够
+✅ PM2 / 直接 Node 运行
+```
+
+### R-04 SSH 密钥认证，非密码
+
+- 服务器使用 SSH 密钥文件（`workbuddy.pem`）认证
+- GitHub Actions 使用 `SERVER_SSH_KEY` Secret
+- 如果报"密码不对"/"密钥不对"：
+  1. 确认使用密钥认证而非密码
+  2. 确认密钥内容完整（包含 BEGIN/END 行）
+  3. 确认文件权限（chmod 600）
+
+### R-05 部署前必须 Type Check
+
+```
+本地推送前：npx tsc --noEmit  ← 必须通过
+```
 
 ---
 
