@@ -52,7 +52,18 @@ npm run build
 2.  **发布职位**: 确认发布后，积分账户是否自动扣减 100。
 3.  **简历解析**: 确认 `ResumeService` 是否能成功将简历映射至 `Talent` 表（去重逻辑验证）。
 
+## 4. 给主事 (Agent) 的反馈回传 (非常重要)
+
+为了确保主事在不同对话窗口中能持续掌握进度，请都统在操作完成后执行：
+
+1.  **若 Build 成功**: 请修改 `docs/TODAY_PROGRESS.md`，写入 `[STATUS]: Build OK`。
+2.  **若 Build 失败**: 请将控制台报错日志贴入 `docs/TODAY_PROGRESS.md`。
+3.  **最后执行**: `git add . && git commit -m "chore: status update for agent" && git push`。
+
+**主事在归队时会第一时间读取该文件以调整开发策略。**
+
 ---
 **天策府主事 Liman 敬上**
+
 *项目代码状态：[Master - e2b05d4..99c8610]*
 

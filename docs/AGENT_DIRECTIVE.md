@@ -10,6 +10,8 @@
 5. pdf
 6. 1password
 
-## 2. 战局同步
-1. cat DEPLOYMENT_HANDOVER.md
-2. git log -n 3 --oneline
+## 2. 战局同步 (Context Sync)
+1. 执行 `cat docs/TODAY_PROGRESS.md` 获取都统最新构建反馈。
+2. 执行 `cat DEPLOYMENT_HANDOVER.md` 确认目前修复节点。
+3. 执行 `git log -n 3 --oneline` 确认云端同步状态。
+
