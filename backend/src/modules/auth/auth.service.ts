@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { RedisService } from '../../common/redis/redis.service';
 import { User, UserRole } from '../user/user.entity';
 import { LoginDto, RegisterDto, SendSmsDto } from './dto/auth.dto';
+import { SmsService } from '../../common/sms/sms.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -13,19 +15,24 @@ export class AuthService {
     private userRepo: Repository<User>,
     private jwtService: JwtService,
     private redisService: RedisService,
+    private smsService: SmsService,
+    private configService: ConfigService,
   ) {}
 
   async sendSmsCode(dto: SendSmsDto) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const ttl = 5 * 60; // 5 minutes
 
-    // Use Redis to store verification code with auto-expiry
     const redis = this.redisService.getClient();
     await redis.setex(`sms:${dto.phone}`, ttl, code);
 
-    // TODO: integrate real SMS provider (Aliyun / Tencent Cloud)
-    // For dev, just log the code
-    console.log(`[SMS] ${dto.phone}: ${code}`);
+    // Get template ID based on type
+    const templateId = dto.type === 'register' 
+      ? this.configService.get<string>('TENCENT_SMS_TEMPLATE_REGISTER') 
+      : this.configService.get<string>('TENCENT_SMS_TEMPLATE_LOGIN');
+
+    // Send via Tencent Cloud
+    await this.smsService.sendVerificationCode(dto.phone, code, templateId);
 
     return { message: '验证码已发送' };
   }
@@ -58,12 +65,22 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // 生产环境必须使用真实短信验证，禁止硬编码万能码
     const isValid = await this.verifySmsCode(dto.phone, dto.code);
     if (!isValid) throw new UnauthorizedException('验证码错误或已过期');
 
-    const user = await this.userRepo.findOne({ where: { phone: dto.phone } });
-    if (!user) throw new UnauthorizedException('账号不存在，请先注册');
+    let user = await this.userRepo.findOne({ where: { phone: dto.phone } });
+    
+    // 静默注册逻辑：如果用户不存在，则自动创建
+    if (!user) {
+      user = this.userRepo.create({
+        phone: dto.phone,
+        name: `用户_${dto.phone.slice(-4)}`, 
+        idCard: 'PENDING', 
+        role: UserRole.SEEKER, 
+      });
+      await this.userRepo.save(user);
+    }
+
     if (!user.isActive) throw new UnauthorizedException('账号已被禁用');
 
     return this.generateToken(user);

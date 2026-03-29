@@ -87,6 +87,16 @@ export class Talent {
   @Column({ name: 'is_public', default: false })
   isPublic: boolean;
 
+  @Column({ name: 'tier', length: 10, default: 'C' }) // S, A, B, C
+  @Index()
+  tier: string;
+
+  @Column({ name: 'classification', type: 'simple-array', nullable: true })
+  classification: string[]; // ['技术', '前端', 'React']
+
+  @Column({ name: 'score', default: 0 })
+  score: number;
+
   @Column({ default: true })
   verified: boolean;
 

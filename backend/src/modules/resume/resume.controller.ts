@@ -76,8 +76,17 @@ export class ResumeController {
   async getResumes(
     @Request() req,
     @Query('folderId') folderId?: string,
+    @Query('keyword') keyword?: string,
+    @Query('tier') tier?: string,
+    @Query('minScore') minScore?: number,
+    @Query('maxScore') maxScore?: number,
   ) {
-    const resumes = await this.resumeService.getResumes(req.user.id, folderId);
+    const resumes = await this.resumeService.getResumes(req.user.id, folderId, {
+      keyword,
+      tier,
+      minScore: minScore ? Number(minScore) : undefined,
+      maxScore: maxScore ? Number(maxScore) : undefined,
+    });
     return { success: true, data: resumes };
   }
 
@@ -85,6 +94,22 @@ export class ResumeController {
   async getResume(@Request() req, @Param('id') id: string) {
     const resume = await this.resumeService.getResumeById(id, req.user.id);
     return { success: true, data: resume };
+  }
+
+  @Get(':id/status')
+  async getResumeStatus(@Request() req, @Param('id') id: string) {
+    const resume = await this.resumeService.getResumeById(id, req.user.id);
+    if (!resume) {
+      return { success: false, message: '简历不存在' };
+    }
+    return {
+      success: true,
+      data: {
+        id: resume.id,
+        parseStatus: resume.parseStatus,
+        parseError: resume.parseError,
+      },
+    };
   }
 
   @Get(':id/download')
@@ -137,6 +162,13 @@ export class ResumeController {
   ) {
     const folder = await this.resumeService.createFolder(req.user.id, name, parentId);
     return { success: true, data: folder };
+  }
+
+  @Post('fetch-from-email')
+  async fetchFromEmail(@Request() req) {
+    // 触发邮箱简历拉取异步任务
+    await this.resumeService.triggerEmailFetch(req.user.id);
+    return { success: true, message: '邮件拉取任务已加入队列，后台处理中' };
   }
 
   @Get('folders')

@@ -1,8 +1,13 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module, Global } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 
+@Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([])],
-  exports: [TypeOrmModule],
+  imports: [
+    BullModule.registerQueue({
+      name: 'resume-parsing',
+    }),
+  ],
+  exports: [BullModule],
 })
 export class QueueModule {}

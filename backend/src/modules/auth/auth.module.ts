@@ -8,10 +8,12 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from '../user/user.entity';
 import { IdCardRecord } from './entities/id-card-record.entity';
+import { SmsModule } from '../../common/sms/sms.module';
 
 @Module({
   imports: [
     PassportModule,
+    SmsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -114,6 +114,13 @@ export class Resume {
   @Index()
   folderId: string;
 
+  @Column({ name: 'score', default: 0 })
+  score: number;
+
+  @Column({ name: 'tier', length: 10, default: 'C' }) // S, A, B, C
+  @Index()
+  tier: string;
+
   // 是否公开到人才广场
   @Column({ name: 'is_public', default: false })
   isPublic: boolean;

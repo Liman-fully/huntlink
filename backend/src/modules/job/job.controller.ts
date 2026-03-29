@@ -1,11 +1,33 @@
-import { Controller, Get, Query, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Controller, Get, Query, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PositionClassifier } from '../../common/classifiers/position-classifier';
+import { JobService } from './job.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateJobDto } from './dto/job.dto';
 
 @ApiTags('职位管理')
 @Controller('jobs')
 export class JobController {
   private classifier = new PositionClassifier();
+
+  constructor(private readonly jobService: JobService) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '获取我的职位列表' })
+  async getMyJobs(@Query() params: any) {
+    return this.jobService.findAll(params || {}); 
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '发布新职位' })
+  async createJob(@Body() dto: CreateJobDto, @Req() req) {
+    const userId = req.user.id;
+    return this.jobService.create(dto, userId);
+  }
 
   @Get('categories')
   @ApiOperation({ summary: '获取职位分类列表' })
@@ -74,6 +96,11 @@ export class JobController {
         positions: totalPositions,
         keywords: totalKeywords,
         avgKeywordsPerFunction: (totalKeywords / functions.length).toFixed(1),
+      },
+    };
+  }
+}
+ functions.length).toFixed(1),
       },
     };
   }
