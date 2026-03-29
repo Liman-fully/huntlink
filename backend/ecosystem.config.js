@@ -23,7 +23,7 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         // 限制 V8 引擎内部内存，给系统留出 512MB 呼吸空间
-        NODE_OPTIONS: '--max-old-space-size=1536 --gc-interval=100',
+        NODE_OPTIONS: '--max-old-space-size=1536',
       },
       env_development: {
         NODE_ENV: 'development',
