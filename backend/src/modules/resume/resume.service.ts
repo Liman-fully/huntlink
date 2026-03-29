@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as path from 'path';
@@ -140,10 +140,10 @@ export class ResumeService {
   }
 
   /**
-   * AI 评分算法 (0-100)
+   * AI 评分与分类算法 (0-100)
    * 权重：学历 20%，稳定性 20%，技能匹配 30%，经验深度 30%
    */
-  private calculateScore(aiResult: any): number {
+  private calculateScoreAndTier(aiResult: any): { score: number; tier: string } {
     let score = 0;
 
     // 1. 学历评分 (20%)
@@ -156,9 +156,8 @@ export class ResumeService {
     // 2. 稳定性评分 (20%) - 基于平均在职时长
     const experiences = aiResult.workExperience || [];
     if (experiences.length > 0) {
-      // 简单逻辑：工作份数越少且总年限越长评分越高
       const years = aiResult.basicInfo?.experienceYears || 0;
-      const avgYears = years / experiences.length;
+      const avgYears = experiences.length > 0 ? years / experiences.length : 0;
       if (avgYears >= 3) score += 20;
       else if (avgYears >= 2) score += 15;
       else if (avgYears >= 1) score += 10;
@@ -177,7 +176,15 @@ export class ResumeService {
     else if (years >= 3) score += 20;
     else if (years >= 1) score += 10;
 
-    return Math.min(score, 100);
+    const finalScore = Math.min(score, 100);
+    
+    // 自动判定等级
+    let tier = 'C';
+    if (finalScore >= 85) tier = 'S';
+    else if (finalScore >= 70) tier = 'A';
+    else if (finalScore >= 50) tier = 'B';
+
+    return { score: finalScore, tier };
   }
 
   private mapAiResultToTalent(aiResult: any): Partial<Talent> {
@@ -192,30 +199,69 @@ export class ResumeService {
   }
 
   private async extractTextFromFile(filePath: string): Promise<string> {
+    // 实际应调用 PDF/Docx 解析库，此处保留主逻辑框架
     return "张三，清华大学毕业，曾在字节跳动担任后端架构师。";
   }
 
   private getFileType(fileName: string): string {
     const ext = path.extname(fileName).toLowerCase();
-    const typeMap: Record<string, string> = { '.pdf': 'pdf', '.doc': 'doc', '.docx': 'docx' };
+    const typeMap: Record<string, string> = {
+      '.pdf': 'pdf',
+      '.doc': 'doc',
+      '.docx': 'docx',
+      '.jpg': 'jpg',
+      '.jpeg': 'jpg',
+      '.png': 'png',
+    };
     return typeMap[ext] || 'unknown';
   }
 
   private generateTags(parseResult: ParseResult): string[] {
     const tags: string[] = [];
-    if (parseResult.skills) tags.push(...parseResult.skills.slice(0, 5));
+    if (parseResult.skills) {
+      tags.push(...parseResult.skills.slice(0, 10));
+    }
+    if (parseResult.workExperience) {
+      parseResult.workExperience.forEach(exp => {
+        if (exp.company && !tags.includes(exp.company)) {
+          tags.push(exp.company);
+        }
+      });
+    }
     return tags;
   }
 
-  async getResumes(userId: string, folderId?: string): Promise<Resume[]> {
-    return this.resumeRepository.find({
-      where: { userId, ...(folderId ? { folderId } : {}) },
-      order: { createdAt: 'DESC' },
-    });
+  async getResumes(userId: string, folderId?: string, searchParams?: any): Promise<Resume[]> {
+    const qb = this.resumeRepository.createQueryBuilder('resume')
+      .where('resume.userId = :userId', { userId });
+
+    if (folderId) {
+      qb.andWhere('resume.folderId = :folderId', { folderId });
+    }
+
+    if (searchParams) {
+      const { keyword, tier, minScore, maxScore } = searchParams;
+      if (keyword) {
+        qb.andWhere('(resume.fileName LIKE :kw OR resume.basicInfo->>\'name\' LIKE :kw OR resume.basicInfo->>\'currentTitle\' LIKE :kw)', { kw: `%${keyword}%` });
+      }
+      if (tier) {
+        qb.andWhere('resume.tier = :tier', { tier });
+      }
+      if (minScore !== undefined) {
+        qb.andWhere('resume.score >= :minScore', { minScore });
+      }
+      if (maxScore !== undefined) {
+        qb.andWhere('resume.score <= :maxScore', { maxScore });
+      }
+    }
+
+    return qb.orderBy('resume.createdAt', 'DESC').getMany();
   }
 
   async getResumeById(id: string, userId: string): Promise<Resume> {
-    return this.resumeRepository.findOne({ where: { id, userId } });
+    return this.resumeRepository.findOne({
+      where: { id, userId },
+    });
   }
 
   async createFolder(userId: string, name: string, parentId?: string): Promise<ResumeFolder> {
@@ -224,25 +270,22 @@ export class ResumeService {
   }
 
   async getFolders(userId: string): Promise<ResumeFolder[]> {
-    return this.folderRepository.find({ where: { userId }, order: { order: 'ASC' } });
+    return this.folderRepository.find({
+      where: { userId },
+      order: { order: 'ASC', createdAt: 'ASC' },
+    });
   }
 
   async deleteResume(id: string, userId: string): Promise<void> {
     const resume = await this.resumeRepository.findOne({ where: { id, userId } });
-    if (resume) await this.resumeRepository.remove(resume);
-  }
-}
+    if (!resume) {
+      throw new NotFoundException('简历不存在');
+    }
 
-
-  async deleteResume(id: string, userId: string): Promise<void> {
-    const resume = await this.resumeRepository.findOne({ where: { id, userId } });
-    if (resume) await this.resumeRepository.remove(resume);
-  }
-}
-  await this.resumeRepository.remove(resume);
-  }
-}
-  await this.cosService.deleteFile(resume.cosKey);
+    // 删除 COS 文件
+    if (resume.cosKey) {
+      try {
+        await this.cosService.deleteFile(resume.cosKey);
       } catch (error) {
         this.logger.error(`删除 COS 文件失败: ${error.message}`);
       }
@@ -261,50 +304,7 @@ export class ResumeService {
     await this.resumeRepository.remove(resume);
   }
 }
-e aiService: AiService,
-  ) {}
-
-  async uploadResume(
-    userId: string,
-    file: any,
-    folderId?: string,
-  ): Promise<Resume> {
-    // 保存文件到本地作为备份
-    const uploadDir = path.join(process.cwd(), 'uploads', 'resumes', userId);
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    const fileName = `${Date.now()}_${file.originalname}`;
-    const filePath = path.join(uploadDir, fileName);
-    fs.writeFileSync(filePath, file.buffer);
-
-    // 上传文件到 COS
-    let cosUrl: string;
-    let cosKey: string;
-    try {
-      const result = await this.cosService.uploadResume(
-        userId,
-        file.buffer,
-        file.originalname,
-      );
-      cosUrl = result.url;
-      cosKey = result.key;
-    } catch (error) {
-      // 如果 COS 上传失败，删除本地文件并抛出错误
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-      throw new BadRequestException(`COS 上传失败: ${error.message}`);
-    }
-
-    // 创建简历记录
-    const resume = this.resumeRepository.create({
-      userId,
-      filePath,
-      localPath: filePath,
-      fileName: file.originalname,
-      fileSize: file.size,
+.size,
       fileType: this.getFileType(file.originalname),
       cosUrl,
       cosKey,
