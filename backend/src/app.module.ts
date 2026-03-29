@@ -27,6 +27,7 @@ import { InterviewModule } from './modules/interview/interview.module';
 import { ExportModule } from './modules/export/export.module';
 import { DownloadModule } from './modules/download/download.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
+import { SearchLogModule } from './modules/search/search-log.module';
 import { IndexMaintenanceService } from './common/maintenance/index-maintenance.service';
 import { QueryLoggingMiddleware } from './common/middleware/query-logging.middleware';
 import { TalentEventListener } from './modules/talent/talent-event-listener';
@@ -79,6 +80,7 @@ import { ExportProcessor } from './export.processor';
     ExportModule,
     DownloadModule,
     RecommendationModule,
+    SearchLogModule,
   ],
   providers: [
     IndexMaintenanceService,

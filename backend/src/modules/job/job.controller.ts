@@ -100,8 +100,3 @@ export class JobController {
     };
   }
 }
- functions.length).toFixed(1),
-      },
-    };
-  }
-}

@@ -33,7 +33,17 @@ export class JobService {
     }
 
     queryBuilder.skip((page - 1) * limit).take(limit);
-...
+
+    const [jobs, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: jobs,
+      total,
+      page,
+      limit,
+    };
+  }
+
   async create(createJobDto: CreateJobDto, userId: string): Promise<Job> {
     // 扣除积分逻辑 (发布职位扣除100积分)
     const pointsRequired = 100;
