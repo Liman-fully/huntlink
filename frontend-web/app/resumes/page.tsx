@@ -262,3 +262,112 @@ export default function ResumesPage() {
     </div>
   )
 }
+                <Badge variant="secondary" className="rounded bg-accent text-[9px] px-1 py-0">
+                  {folder.count}
+                </Badge>
+              </button>
+            ))}
+            <button className="flex shrink-0 items-center gap-1 rounded bg-card px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground">
+              <Plus className="h-3 w-3" />
+              新建
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-3 h-auto w-full justify-start gap-0.5 rounded-lg bg-accent/50 p-0.5">
+            <TabsTrigger 
+              value="collected" 
+              className="rounded text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <Star className="mr-1 h-3 w-3" />
+              已收藏
+              <Badge variant="secondary" className="ml-1 h-4 rounded-full bg-primary/10 px-1 text-[9px] text-primary">
+                {savedTalents.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="viewed" 
+              className="rounded text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <Eye className="mr-1 h-3 w-3" />
+              浏览记录
+              <Badge variant="secondary" className="ml-1 h-4 rounded-full bg-accent px-1 text-[9px]">
+                {viewedTalents.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="contacted" 
+              className="rounded text-[11px] data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <Clock className="mr-1 h-3 w-3" />
+              已沟通
+              <Badge variant="secondary" className="ml-1 h-4 rounded-full bg-accent px-1 text-[9px]">
+                {contactedTalents.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Filters + Sort */}
+          <div className="mb-3">
+            <FilterBar />
+          </div>
+
+          {/* Sort - Right aligned */}
+          <div className="mb-2 flex items-center justify-end border-b border-border/40 pb-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-5 gap-0.5 px-1.5 text-[10px] text-muted-foreground">
+                  {sortBy}
+                  <ChevronDown className="h-2.5 w-2.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-28">
+                {["收藏时间", "最近活跃", "匹配度", "薪资范围"].map((option) => (
+                  <DropdownMenuItem 
+                    key={option} 
+                    onClick={() => setSortBy(option)}
+                    className="text-xs"
+                  >
+                    {option}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <TabsContent value={activeTab} className="mt-0">
+            {currentTalents.length > 0 ? (
+              <div className="space-y-1.5">
+                {currentTalents.map((talent) => (
+                  <TalentCard key={talent.id} talent={talent} />
+                ))}
+              </div>
+            ) : (
+              <Card className="border-0 py-10 text-center shadow-sm">
+                <Star className="mx-auto h-8 w-8 text-muted-foreground/50" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">暂无数据</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  浏览人才广场，收藏感兴趣的候选人
+                </p>
+                <Button size="sm" className="mt-3 rounded-full text-xs">
+                  去人才广场
+                </Button>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Load More */}
+        {currentTalents.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" size="sm" className="rounded-full px-6 text-xs">
+              加载更多
+            </Button>
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
