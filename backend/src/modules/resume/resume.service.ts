@@ -304,13 +304,6 @@ export class ResumeService {
     await this.resumeRepository.remove(resume);
   }
 }
-.size,
-      fileType: this.getFileType(file.originalname),
-      cosUrl,
-      cosKey,
-      folderId,
-      parseStatus: 'pending',
-    });
 
     await this.resumeRepository.save(resume);
 
